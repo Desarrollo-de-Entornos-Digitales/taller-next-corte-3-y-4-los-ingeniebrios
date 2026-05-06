@@ -14,7 +14,7 @@ export default function Home() {
         backgroundColor: "#5454E9",
       }}
     >
-      <div className="w-full max-w-6xl flex items-center justify-between px-20">
+      <div className="w-full max-w-6xl flex items-center justify-end gap-52">
 
         {/* IZQUIERDA */}
         <div className="flex flex-col items-center text-white">
@@ -41,23 +41,35 @@ export default function Home() {
 
             <form className="flex flex-col gap-5">
 
-              <input
-                type="email"
-                placeholder="Email"
-                className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
-              />
+              {/* EMAIL */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">Email</label>
+                <input
+                  type="email"
+                  placeholder="example@mail.com"
+                  className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
+                />
+              </div>
 
-              <input
-                type="password"
-                placeholder="Password"
-                className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
-              />
+              {/* PASSWORD */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••"
+                  className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
+                />
+              </div>
 
-              <input
-                type="password"
-                placeholder="Confirm password"
-                className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
-              />
+              {/* CONFIRM PASSWORD */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">Confirm password</label>
+                <input
+                  type="password"
+                  placeholder="••••••"
+                  className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
+                />
+              </div>
 
               <button
                 type="submit"
@@ -72,21 +84,22 @@ export default function Home() {
               - Or sign in with -
             </p>
 
+            {/* ICONOS */}
             <div className="flex justify-center gap-5 mt-4">
 
-  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer">
-    <Image src="/Google.png" alt="Google" width={24} height={24} />
-  </div>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer">
+                <Image src="/google.png" alt="Google" width={24} height={24} />
+              </div>
 
-  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer">
-    <Image src="/microsoft.png" alt="Microsoft" width={24} height={24} />
-  </div>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer">
+                <Image src="/microsoft.png" alt="Microsoft" width={24} height={24} />
+              </div>
 
-  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer">
-    <Image src="/x.png" alt="X" width={24} height={24} />
-  </div>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer">
+                <Image src="/x.png" alt="X" width={24} height={24} />
+              </div>
 
-</div>
+            </div>
 
             <p className="text-center text-sm mt-6 text-gray-600">
               Don’t have an account?{" "}
