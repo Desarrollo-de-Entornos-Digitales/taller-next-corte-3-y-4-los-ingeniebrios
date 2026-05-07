@@ -1,72 +1,56 @@
-// PostCard.tsx
-"use client";
+import React from 'react';
+import { MockPost } from '../../../../util/post.util'; 
 
-import { useRouter } from "next/navigation";
+interface PostCardProps {
+  post: MockPost;
+}
 
-type Post = {
-  id: string;
-  author: {
-    name: string;
-    avatar: string;
-    level: string;
-  };
-  content: string;
-  category: string;
-  image?: string | null;
-};
-
-export default function PostCard({ post }: { post: Post }) {
-  const router = useRouter();
-
+const PostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-5 transition hover:shadow-lg">
-      {/* HEADER */}
-      <div className="flex items-center gap-3 mb-4">
-        <img
-          src={post.author.avatar}
-          alt="avatar"
-          className="w-12 h-12 rounded-full object-cover"
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4 flex flex-col gap-3 relative">
+
+      <div className="flex items-center gap-3">
+        <img 
+          src={post.author.avatar} 
+          alt={post.author.name} 
+          className="w-12 h-12 rounded-full object-cover border border-gray-200"
         />
         <div className="flex flex-col">
-          <span className="font-semibold text-sm">
-            {post.author.name}
-          </span>
-          <span className="text-xs text-gray-500">
-            {post.author.level}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-gray-800 text-sm leading-tight">
+              {post.author.name} - Nivel: {post.author.level}
+            </span>
+          </div>
+          <span className="text-xs text-gray-400">Hace 2 horas</span>
         </div>
       </div>
 
-      {/* CONTENT */}
-      <p className="text-gray-700 whitespace-pre-line mb-4">
-        {post.content}
-      </p>
+      <div className="mt-1">
+        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+          {post.content}
+        </p>
+      </div>
 
-      {/* IMAGE */}
-      {post.image && (
-        <div className="w-full mb-4">
-          <img
-            src={post.image}
-            alt="post"
-            className="w-full max-h-96 object-cover rounded-xl"
+      <div className="flex justify-between items-center mt-2">
+
+        <div className="flex gap-2">
+          <span className="px-3 py-1 bg-[#EBEBFF] text-[#5856D6] rounded-full text-[10px] font-bold">
+            {post.category}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors">
+          <span className="text-xs font-bold text-gray-600">3</span>
+          <img 
+            src="/comment.svg" 
+            alt="comments" 
+            className="w-4 h-4 opacity-50" 
           />
         </div>
-      )}
-
-      {/* FOOTER - Solo categoría, sin botón de comentarios */}
-      <div className="flex items-center justify-between">
-        <span className="bg-indigo-100 text-indigo-600 text-xs px-3 py-1 rounded-full">
-          {post.category}
-        </span>
-        
-        {/* Opcional: Botón para ver detalle */}
-        <button
-          onClick={() => router.push(`/posts/${post.id}`)}
-          className="bg-gray-100 hover:bg-gray-200 transition px-4 py-2 rounded-lg text-sm"
-        >
-          Ver más →
-        </button>
       </div>
+  
     </div>
   );
-}
+};
+
+export default PostCard;
