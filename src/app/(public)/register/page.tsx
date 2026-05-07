@@ -1,34 +1,88 @@
 "use client";
 
-import LeftSection from "./components/LeftSection";
-import RegisterCard from "./components/RegisterCard";
+import { useRef } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import InputField from "../login/components/InputField"; // Ajusta la ruta según tu carpeta
 
 export default function Register() {
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+
   return (
-    <main className="flex h-screen w-full">
+    <main
+      className="h-screen w-full flex items-center justify-center"
+      style={{
+        backgroundImage: "url('/background.png')",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "top left",
+        backgroundColor: "#5454E9",
+      }}
+    >
+      <div className="w-1/2 text-white flex flex-col items-center justify-center px-20">
+        <div className="w-60 h-60 bg-white rounded-full flex items-center justify-center mb-8 shadow-lg">
+          <Image src="/logo.png" alt="logo" width={180} height={180} priority />
+        </div>
 
-      <LeftSection
-        title={
-          <>
-            Welcome to <br /> Icesi Connect
-          </>
-        }
-        subtitle={
-          <>
-            ¡The best <br /> Community!
-          </>
-        }
-        background="/background.png"
-        logo="/logo.png"
-      />
+        <h1 className="text-6xl font-bold leading-tight text-center">
+          Welcome to <br />
+          Icesi Connect
+        </h1>
 
-      <div className="w-1/2 h-full bg-[#EDEDED] flex items-center justify-center">
-        <RegisterCard
-          title="Create your account"
-          buttonText="Sign in"
-        />
+        <p className="text-4xl mt-8 font-semibold text-center">
+          ¡The best <br /> Community!
+        </p>
       </div>
 
+      <div className="flex items-center justify-center">
+        <div className="relative overflow-hidden bg-[#F5F5F5] p-10 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.2)] w-[470px]">
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold text-center mb-10 text-black">
+              Create your account
+            </h2>
+
+            <form ref={formRef} className="flex flex-col gap-5">
+              <InputField name="email" placeholder="Email" type="email" />
+              <InputField name="password" placeholder="Password" type="password" />
+              <InputField name="confirmPassword" placeholder="Confirm password" type="password" />
+
+              <button
+                type="submit"
+                className="bg-[#5454E9] text-white py-3 rounded-lg mt-2 hover:opacity-90 transition font-medium text-lg"
+              >
+                Sign in
+              </button>
+            </form>
+
+            <p className="text-center text-gray-600 mt-6 text-sm">
+              - Or sign in with -
+            </p>
+
+            <div className="flex justify-center gap-4 mt-4">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer hover:scale-105 transition">
+                <Image src="/Google.png" alt="Google" width={24} height={24} />
+              </div>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer hover:scale-105 transition">
+                <Image src="/microsoft.png" alt="Microsoft" width={24} height={24} />
+              </div>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer hover:scale-105 transition">
+                <Image src="/x.png" alt="X" width={24} height={24} />
+              </div>
+            </div>
+
+            <p className="text-center text-sm mt-6 text-gray-600">
+              Don’t have an account?{" "}
+              <span
+                onClick={() => router.push("/login")}
+                className="text-purple-600 cursor-pointer hover:underline font-bold"
+              >
+                Sign up
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
