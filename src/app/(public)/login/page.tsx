@@ -18,7 +18,6 @@ export default function Login() {
       }}
     >
 
-      {/* IZQUIERDA */}
       <div className="w-1/2 text-white flex flex-col justify-center px-20">
 
         <h1 className="text-6xl font-bold leading-tight">
@@ -33,8 +32,17 @@ export default function Login() {
 
       <div className=" flex items-center justify-center">
 
-        <div className="bg-[#F5F5F5] p-10 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.2)] w-[420px]">
+        <div
+        className="absolute top-[25px] right-[5px] w-[200px] h-[220px] bg-no-repeat bg-contain z-20"
+        style={{
+        backgroundImage: "url('/andy.png')",
+        }}
+        ></div>
 
+        <div className="relative overflow-hidden bg-[#F5F5F5] p-10 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.2)] w-[470px]">
+
+        
+        <div className="relative z-10">
           <h2 className="text-3xl font-bold text-center mb-10 text-black">
             Login to your account
           </h2>
@@ -87,6 +95,7 @@ export default function Login() {
             </span>
           </p>
 
+        </div>
         </div>
       </div>
 
