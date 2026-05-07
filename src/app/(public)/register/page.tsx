@@ -25,11 +25,9 @@ export default function Register() {
       email: String(formData.get("email")),
       password: String(formData.get("password")),
       confirmPassword: String(formData.get("confirmPassword")),
-      roleName: String(formData.get("roleName")),
-      avatar: "https://i.pravatar.cc/150", // Avatar genérico por defecto
+      avatar: "https://i.pravatar.cc/150", 
     };
 
-    // Validaciones básicas
     if (payload.password !== payload.confirmPassword) {
       setError("Las contraseñas no coinciden");
       setIsLoading(false);
@@ -40,7 +38,6 @@ export default function Register() {
       const result = await registerAction(payload);
       
       if (result.success) {
-        // Guardar en localStorage para acceso rápido en el cliente
         localStorage.setItem("token", result.access_token!);
         localStorage.setItem("userEmail", payload.email);
         router.push("/feed");
@@ -55,16 +52,17 @@ export default function Register() {
   };
 
   return (
-    <main className="h-screen w-full flex items-center justify-center bg-[#5454E9] relative overflow-hidden">
-      {/* Elementos decorativos */}
-      <div className="absolute top-0 left-0 w-40 h-40">
-        <Image src="/background.png" alt="pattern" width={160} height={160} priority />
-      </div>
+    <main className="h-screen w-full flex items-center justify-center bg-[#5454E9] relative overflow-hidden" 
+    style={{
+        backgroundImage: "url('/background.png')",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "top left",
+      }}>
 
-      {/* Izquierda: Branding */}
       <div className="w-1/2 flex flex-col items-center justify-center text-white z-10">
         <div className="w-48 h-48 bg-white rounded-full flex items-center justify-center mb-6 shadow-xl">
-          <Image src="/logo.png" alt="Icesi Logo" width={120} height={120} />
+          <Image src="/logo.png" alt="Icesi Logo" width={180} height={180} />
         </div>
         <h1 className="text-5xl font-bold text-center leading-tight">
           Welcome to <br /> Icesi Connect
@@ -72,10 +70,9 @@ export default function Register() {
         <p className="text-3xl mt-6 font-semibold">¡The best Community!</p>
       </div>
 
-      {/* Derecha: Formulario */}
       <div className="w-1/2 flex items-center justify-center z-10">
         <div className="bg-[#F5F5F5] p-10 rounded-[40px] shadow-2xl w-[480px] max-h-[90vh] overflow-y-auto">
-          <h2 className="text-3xl font-extrabold text-center mb-6 text-black">Create your account</h2>
+          <h2 className="text-3xl font-bold text-center mb-6 text-black">Create your account</h2>
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg mb-4 text-sm text-center">
@@ -88,17 +85,6 @@ export default function Register() {
             <InputField name="username" placeholder="Username" type="text" required />
             <InputField name="email" placeholder="Email @u.icesi.edu.co" type="email" required />
             
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-gray-400 ml-1 tracking-widest uppercase">Select Role</label>
-              <select 
-                name="roleName" 
-                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-black focus:ring-2 focus:ring-[#5454E9] outline-none text-sm transition-all"
-              >
-                <option value="student">Student</option>
-                <option value="moderator">Moderator</option>
-                <option value="admin">Administrator</option>
-              </select>
-            </div>
 
             <InputField name="password" placeholder="Password" type="password" required />
             <InputField name="confirmPassword" placeholder="Confirm password" type="password" required />

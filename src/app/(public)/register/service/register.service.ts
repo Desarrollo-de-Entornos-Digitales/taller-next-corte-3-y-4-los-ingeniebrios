@@ -17,9 +17,9 @@ class RegisterService {
                 name: userData.name,
                 username: userData.username,
                 institutional_email: userData.email, 
-                passwordHash: userData.password,    
+                password: userData.password,    
                 avatar: userData.avatar,
-                roleName: userData.roleName
+                roleName: "student" 
             });
             return response.data;
         } catch (error) {
