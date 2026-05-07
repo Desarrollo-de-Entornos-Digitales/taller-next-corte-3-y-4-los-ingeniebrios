@@ -19,7 +19,7 @@ export default function PostList({
         );
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="w-full max-w-[850px] flex flex-col gap-4">
 
       {filteredPosts.map((post) => (
         <PostCard
