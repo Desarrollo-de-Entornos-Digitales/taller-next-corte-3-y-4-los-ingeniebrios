@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import InputField from "../../../components/InputField";
 
 export default function Login() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -49,18 +50,16 @@ export default function Login() {
 
           <form ref={formRef} className="flex flex-col gap-5">
 
-            <input
+            <InputField
             name="email"
             placeholder="Email"
-            type="email"
-            className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0] text-black"
-          />
+           type="email"
+            />
 
-            <input
+            <InputField
             name="password"
             placeholder="Password"
             type="password"
-            className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0] text-black"
             />
 
             <button 
