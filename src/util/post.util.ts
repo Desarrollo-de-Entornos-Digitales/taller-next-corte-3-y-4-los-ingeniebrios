@@ -1,4 +1,4 @@
-// utils/post.util.ts
+import axiosClient from "@/lib/axios/client";
 
 export type MockPost = {
   id: string;
