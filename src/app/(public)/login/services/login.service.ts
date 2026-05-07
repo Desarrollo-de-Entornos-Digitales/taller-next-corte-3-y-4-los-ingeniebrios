@@ -1,12 +1,12 @@
-import axiosClient from "../../../lib/axios/client";
+import axiosClient from "../../../../lib/axios/client"; 
 
 class LoginService {
-    async login(email: string, password: string) {
-        const result = await axiosClient.post("/auth/login", {
-            email,
-            password,
+    async login(email: string, passwordHash: string) {
+        const result = await axiosClient.post("/auth/login", { 
+            institutional_email: email, 
+            password: passwordHash 
         });
-        return result;
+        return result.data;
     }
 }
 
