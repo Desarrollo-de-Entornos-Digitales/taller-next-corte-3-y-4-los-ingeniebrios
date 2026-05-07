@@ -41,35 +41,23 @@ export default function Home() {
 
             <form className="flex flex-col gap-5">
 
-              {/* EMAIL */}
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 font-medium">Email</label>
-                <input
-                  type="email"
-                  placeholder="example@mail.com"
-                  className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
-                />
-              </div>
+              <input
+                type="email"
+                placeholder="Email"
+                className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0] text-black"
+              />
 
-              {/* PASSWORD */}
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 font-medium">Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••"
-                  className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
-                />
-              </div>
+              <input
+                type="password"
+                placeholder="Password"
+                className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0] text-black"
+              />
 
-              {/* CONFIRM PASSWORD */}
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 font-medium">Confirm password</label>
-                <input
-                  type="password"
-                  placeholder="••••••"
-                  className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0]"
-                />
-              </div>
+              <input
+                type="password"
+                placeholder="Confirm password"
+                className="bg-transparent border border-[#6A5AE0] rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#6A5AE0] text-black"
+              />
 
               <button
                 type="submit"
