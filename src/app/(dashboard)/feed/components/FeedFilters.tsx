@@ -35,15 +35,7 @@ export default function FeedFilters({
           Filtros
         </h2>
 
-        <button className="text-gray-400 hover:text-gray-600">
-          ✕
-        </button>
       </div>
-
-      {/* TITLE */}
-      <p className="text-sm text-gray-500 mb-4">
-        Seleccionar categoría
-      </p>
 
       {/* CATEGORIES */}
       <div className="flex flex-col gap-2">
