@@ -5,26 +5,54 @@ import { cookies } from "next/headers";
 import { loginService } from "./services/login.service";
 
 export default async function loginAction(email: string, password: string) {
-    // 1. Ejecutamos el login a través del servicio seguro
     const result = await loginService.login(email, password);
 
-    // 2. Si safeRequest detectó un error (ej: 401, 404 o caída de servidor), lo manejamos aquí
+    // 1. Si las credenciales están mal (el servidor responde 401 o 404)
     if (result.error) {
-        console.error("Error en loginAction:", result.message);
-        return result; // Retorna { error: true, message: "..." } al formulario
+        // Hacemos el mensaje mucho más amigable para el estudiante
+        if (result.status === 401 || result.status === 404) {
+            return {
+                error: true,
+                message: "Correo institucional o contraseña incorrectos. Por favor, verifica tus datos."
+            };
+        }
+        return {
+            error: true,
+            message: `No se pudo conectar con el servidor: ${result.message}`
+        };
     }
 
-    // 3. Si todo salió bien, guardamos el token de result.data en las cookies
+    // 🔍 Diagnóstico de emergencia para extraer el token donde sea que venga
+    let token: string | undefined = undefined;
+
+    if (result.data) {
+        token = (result.data as any).access_token || 
+                (result.data as any).token || 
+                (result.data as any).data?.access_token;
+    }
+
+    // 2. Si definitivamente no encontramos ningún token en la respuesta
+    if (!token) {
+        return {
+            error: true,
+            message: "La cuenta existe, pero hubo un problema al generar tu sesión. Inténtalo de nuevo."
+        };
+    }
+
+    // 3. Crear la cookie si todo es correcto
     const cookiesStore = await cookies();
     
-    cookiesStore.set("token", result.data.access_token, {
-        httpOnly: true, // Protege la cookie para que no sea accesible desde JS en el navegador
+    cookiesStore.set("token", token, {
+        httpOnly: true,
         path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 1 semana de duración
-        secure: process.env.NODE_ENV === "production", // Solo HTTPS en producción
+        maxAge: 60 * 60 * 24 * 7, // 1 semana
+        secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
     });
 
-    // 4. Retornamos el resultado exitoso para que el componente redirija al /feed
-    return result;
+    return {
+        error: false,
+        data: result.data,
+        status: result.status
+    };
 }

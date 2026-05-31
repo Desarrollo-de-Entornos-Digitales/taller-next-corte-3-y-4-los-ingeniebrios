@@ -4,16 +4,20 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import InputField from "./components/InputField";
-import { loginService } from "../login/services/login.service";
+// 1. Importamos el loginAction en lugar del servicio directo
+import loginAction from "./login.action"; 
 
 export default function Login() {
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  // Estado para capturar errores de credenciales inválidas y mostrarlos en el HTML
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null); // Limpiamos errores previos
 
     if (!formRef.current) return;
     
@@ -21,32 +25,31 @@ export default function Login() {
     const email = String(formData.get("email") || "");
     const password = String(formData.get("password") || "");
 
+    // Validación local de correo
     if (!email.endsWith("@u.icesi.edu.co")) {
-      alert("Acceso denegado: Debes usar tu correo institucional @u.icesi.edu.co");
+      setErrorMessage("Acceso denegado: Debes usar tu correo institucional @u.icesi.edu.co");
       setIsLoading(false);
       return;
     }
 
-    try {
-      const data = await loginService.login(email, password);
-      
-      if (data && (data.access_token || data.token)) {
-        const token = data.access_token || data.token;
-        
-        console.log("Login exitoso");
-        localStorage.setItem("token", token);
-        localStorage.setItem("userEmail", email);
+    // 2. Llamamos al Server Action que se encarga de pegarle al back y setear las cookies
+    const result = await loginAction(email, password);
 
-        router.push("/feed"); 
-      } else {
-        alert("Error: El servidor no devolvió un token.");
-      }
-    } catch (error: any) {
-      console.error("Error al iniciar sesión:", error);
-      const message = error.response?.data?.message || "Credenciales incorrectas o error en el servidor";
-      alert(message);
-    } finally {
+    // 3. Evaluamos la respuesta unificada de safeRequest
+    if (result.error) {
+      // Si las credenciales están mal o el server se cayó, guardamos el mensaje aquí
+      setErrorMessage(result.message || "Credenciales incorrectas o error en el servidor");
       setIsLoading(false);
+    } else {
+      // Login exitoso: Guardamos en localStorage por si acaso y redirigimos
+      console.log("Login exitoso");
+      localStorage.setItem("token", result.data.access_token);
+      localStorage.setItem("userEmail", email);
+
+      // Refrescamos las rutas para que el layout.tsx se entere que ya existe la cookie
+      router.refresh(); 
+      // Viajamos al feed de forma limpia sin que nos rebote
+      router.push("/feed"); 
     }
   };
 
@@ -73,9 +76,16 @@ export default function Login() {
 
       <div className="flex items-center justify-center z-10">
         <div className="bg-[#F5F5F5] p-10 rounded-3xl shadow-2xl w-[470px]">
-          <h2 className="text-3xl font-bold text-center mb-10 text-black">
+          <h2 className="text-3xl font-bold text-center mb-6 text-black">
             Login to your account
           </h2>
+
+          {/* 🔴 BANNER DE ERROR: Se muestra dinámicamente si la contraseña está mal */}
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm font-semibold rounded-xl text-center">
+              {errorMessage}
+            </div>
+          )}
 
           <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
             <InputField 

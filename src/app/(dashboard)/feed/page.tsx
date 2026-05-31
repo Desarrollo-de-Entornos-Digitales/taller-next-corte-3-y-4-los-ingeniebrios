@@ -10,7 +10,6 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F7]">
-      <Navbar />
 
       <div className="flex gap-8 p-8 max-w-[1400px] mx-auto">
 
