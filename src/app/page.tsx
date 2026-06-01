@@ -2,7 +2,6 @@
 
 import LogoButton from "../common/components/LogoButton";
 
-
 export default function Home() {
   return (
     <main
