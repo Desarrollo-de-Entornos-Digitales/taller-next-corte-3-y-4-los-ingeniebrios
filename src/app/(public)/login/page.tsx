@@ -4,20 +4,18 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import InputField from "./components/InputField";
-// 1. Importamos el loginAction en lugar del servicio directo
 import loginAction from "./login.action"; 
 
 export default function Login() {
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  // Estado para capturar errores de credenciales inválidas y mostrarlos en el HTML
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage(null); // Limpiamos errores previos
+    setErrorMessage(null);
 
     if (!formRef.current) return;
     
@@ -25,31 +23,20 @@ export default function Login() {
     const email = String(formData.get("email") || "");
     const password = String(formData.get("password") || "");
 
-    // Validación local de correo
     if (!email.endsWith("@u.icesi.edu.co")) {
       setErrorMessage("Acceso denegado: Debes usar tu correo institucional @u.icesi.edu.co");
       setIsLoading(false);
       return;
     }
 
-    // 2. Llamamos al Server Action que se encarga de pegarle al back y setear las cookies
     const result = await loginAction(email, password);
 
-    // 3. Evaluamos la respuesta unificada de safeRequest
     if (result.error) {
-      // Si las credenciales están mal o el server se cayó, guardamos el mensaje aquí
       setErrorMessage(result.message || "Credenciales incorrectas o error en el servidor");
       setIsLoading(false);
     } else {
-      // Login exitoso: Guardamos en localStorage por si acaso y redirigimos
-      console.log("Login exitoso");
-      localStorage.setItem("token", result.data.access_token);
-      localStorage.setItem("userEmail", email);
-
-      // Refrescamos las rutas para que el layout.tsx se entere que ya existe la cookie
-      router.refresh(); 
-      // Viajamos al feed de forma limpia sin que nos rebote
-      router.push("/feed"); 
+      // Hard redirect para que Next.js relea las cookies recién seteadas
+      window.location.href = "/feed";
     }
   };
 
@@ -80,7 +67,6 @@ export default function Login() {
             Login to your account
           </h2>
 
-          {/* 🔴 BANNER DE ERROR: Se muestra dinámicamente si la contraseña está mal */}
           {errorMessage && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm font-semibold rounded-xl text-center">
               {errorMessage}
@@ -121,7 +107,7 @@ export default function Login() {
           </div>
 
           <p className="text-center text-sm mt-6 text-gray-600">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <span
               onClick={() => router.push("/register")}
               className="text-[#5454E9] cursor-pointer hover:underline font-bold"
