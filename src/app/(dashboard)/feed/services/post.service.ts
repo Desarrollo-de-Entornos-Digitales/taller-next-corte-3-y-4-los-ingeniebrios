@@ -1,5 +1,7 @@
 // src/app/(dashboard)/feed/services/post.service.ts
 
+import axiosClient, {ApiResult, safeRequest} from "../../../../lib/axios/client";
+
 export type PostUserResponse = {
   id: number;
   name: string;
@@ -25,40 +27,15 @@ export type PostResponse = {
   category: PostCategoryResponse;
 };
 
-export type ApiResult<T> =
-  | { error: false; data: T; status: number }
-  | { error: true; message: string; status?: number };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-async function clientRequest<T>(path: string): Promise<ApiResult<T>> {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API_URL}${path}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-    if (!res.ok) {
-      return { error: true, message: `Error ${res.status}`, status: res.status };
-    }
-
-    const data = await res.json();
-    return { error: false, data, status: res.status };
-  } catch (e) {
-    return { error: true, message: "Error de conexión" };
-  }
-}
+export type { ApiResult };
 
 class PostsService {
   async getPosts(): Promise<ApiResult<PostResponse[]>> {
-    return clientRequest<PostResponse[]>("/posts");
+    return safeRequest(axiosClient.get<PostResponse[]>("/posts"));
   }
 
   async getCategories(): Promise<ApiResult<PostCategoryResponse[]>> {
-    return clientRequest<PostCategoryResponse[]>("/categories");
+    return safeRequest(axiosClient.get<PostCategoryResponse[]>("/categories"));
   }
 }
 

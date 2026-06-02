@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { postsService, PostResponse } from "../services/post.service";
+import { PostCategoryResponse } from "../services/post.service";
 
 const icons: Record<string, string> = {
   Matemáticas: "/icons/mathicon.svg",
@@ -13,33 +12,19 @@ const icons: Record<string, string> = {
 };
 
 interface FeedFiltersProps {
+  categories: PostCategoryResponse[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
 }
 
-export default function FeedFilters({ selectedCategory, setSelectedCategory }: FeedFiltersProps) {
-  const [categories, setCategories] = useState<PostCategoryResponse[]>([]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const result = await postsService.getCategories();
-      if (!result.error && result.data) {
-        setCategories(result.data);
-      }
-    };
-    fetchCategories();
-  }, []);
-
+export default function FeedFilters({ categories, selectedCategory, setSelectedCategory }: FeedFiltersProps) {
   return (
     <div className="w-64 bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-fit">
-
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-bold text-lg text-[#5856D6]">Filtros</h2>
       </div>
 
       <div className="flex flex-col gap-2">
-
-        {/* All categories */}
         <button
           onClick={() => setSelectedCategory("All categories")}
           className={`flex items-center gap-3 text-left px-3 py-2 rounded-xl transition-all duration-200 text-sm font-medium
@@ -51,7 +36,6 @@ export default function FeedFilters({ selectedCategory, setSelectedCategory }: F
           <span>All categories</span>
         </button>
 
-        {/* Categorías de la BD */}
         {categories.map((category) => {
           const isActive = selectedCategory === category.name;
           return (
