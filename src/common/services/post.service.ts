@@ -1,6 +1,6 @@
 // src/app/(dashboard)/feed/services/post.service.ts
 
-import axiosClient, {ApiResult, safeRequest} from "../../../../lib/axios/client";
+import axiosClient, {ApiResult, safeRequest} from "../../lib/axios/client";
 
 export type PostUserResponse = {
   id: number;

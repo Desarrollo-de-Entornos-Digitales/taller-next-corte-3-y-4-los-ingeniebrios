@@ -3,7 +3,7 @@
 import { useState } from "react";
 import FeedFilters from "./FeedFilters";
 import PostCard from "./PostCard";
-import { PostResponse, PostCategoryResponse } from "../services/post.service";
+import { PostResponse, PostCategoryResponse } from "../../../../common/services/post.service";
 
 interface FeedContentProps {
   posts: PostResponse[];
