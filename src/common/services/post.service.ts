@@ -27,6 +27,15 @@ export type PostResponse = {
   category: PostCategoryResponse;
 };
 
+export type CreatePostDto = {
+  title: string;
+  description: string;
+  categoryId: number;
+  facultyId: number;
+  image?: string | null;
+  userId: number;
+};
+
 export type { ApiResult };
 
 class PostsService {
@@ -36,6 +45,10 @@ class PostsService {
 
   async getCategories(): Promise<ApiResult<PostCategoryResponse[]>> {
     return safeRequest(axiosClient.get<PostCategoryResponse[]>("/categories"));
+  }
+
+  async createPost(payload: CreatePostDto): Promise<ApiResult<PostResponse>> {
+    return safeRequest(axiosClient.post<PostResponse>("/posts", payload));
   }
 }
 
