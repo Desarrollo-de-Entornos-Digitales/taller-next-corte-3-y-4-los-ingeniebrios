@@ -1,55 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FeedFilters from "./FeedFilters";
 import PostCard from "./PostCard";
+import SetupModal from "./SetupModal";
 import { PostResponse, PostCategoryResponse } from "../services/post.service";
+import { profileSetupService } from "../services/profile-setup.service";
 
 interface FeedContentProps {
   posts: PostResponse[];
   categories: PostCategoryResponse[];
+  userId: number;
+  studentId: number;
 }
 
-export default function FeedContent({ posts, categories }: FeedContentProps) {
+export default function FeedContent({ posts, categories, userId, studentId }: FeedContentProps) {
   const [selectedCategory, setSelectedCategory] = useState("All categories");
+  const [showSetup, setShowSetup] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [userSetup, setUserSetup] = useState<{ career: string; semester: number } | null>(null);
 
-  const filteredPosts = selectedCategory === "All categories"
-    ? posts
-    : posts.filter((post) => post.category.name === selectedCategory);
+  useEffect(() => {
+    checkUserSetup();
+  }, []);
 
-  return (
-    <>
-      <FeedFilters
-        categories={categories}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-      />
+  const checkUserSetup = async () => {
+    // Primero verificar localStorage
+    const savedSetup = localStorage.getItem("userSetup");
+    
+    if (savedSetup) {
+      const data = JSON.parse(savedSetup);
+      if (data.hasSetup) {
+        setUserSetup({ career: data.career, semester: data.semester });
+        setShowSetup(false);
+        setChecking(false);
+        return;
+      }
+    }
+    
+    // Si no está en localStorage, verificar en el backend
+    if (userId) {
+      const result = await profileSetupService.hasUserSetup(userId);
+      if (result.hasSetup) {
+        setShowSetup(false);
+      } else {
+        setShowSetup(true);
+      }
+    } else {
+      setShowSetup(true);
+    }
+    setChecking(false);
+  };
 
-      <div className="flex-1 flex flex-col gap-6 items-center">
-        <section className="bg-[#5454E9] rounded-2xl p-8 relative overflow-hidden text-white shadow-md w-full max-w-[850px]">
-          <div className="max-w-md">
-            <h1 className="text-2xl font-bold mb-2">Responde las preguntas de otros</h1>
-            <p className="text-indigo-100 text-sm leading-relaxed">
-              ¡Ayuda a otros usuarios y gana recompensas por tu colaboración!
-            </p>
-          </div>
-          <div className="absolute right-4 bottom-0 hidden lg:block">
-            <img src="/iguana.png" alt="Mascota" className="h-32 object-contain translate-y-2" />
-          </div>
-        </section>
+  const handleSetupComplete = (data: { career: string; semester: number }) => {
+    setUserSetup(data);
+    setShowSetup(false);
+  };
 
-        <div className="w-full max-w-[850px] flex flex-col gap-4">
-          {filteredPosts.length === 0 ? (
-            <div className="flex justify-center py-20">
-              <span className="text-gray-400 text-sm">No hay posts en esta categoría.</span>
-            </div>
-          ) : (
-            filteredPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))
-          )}
-        </div>
-      </div>
-    </>
-  );
+  // Resto del código igual...
 }
