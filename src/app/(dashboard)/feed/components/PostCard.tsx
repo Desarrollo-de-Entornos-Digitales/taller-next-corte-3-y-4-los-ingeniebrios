@@ -1,5 +1,5 @@
 import React from 'react';
-import { postsService, PostResponse } from "../services/post.service";
+import { postsService, PostResponse } from '../../../../common/services/post.service';
 
 interface PostCardProps {
   post: PostResponse;

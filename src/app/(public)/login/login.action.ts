@@ -21,23 +21,20 @@ export default async function loginAction(email: string, password: string) {
                 (result.data as any).token || 
                 (result.data as any).data?.access_token;
     }
-    if (!token) {
+    if (!token) 
         return {
             error: true,
             message: "La cuenta existe, pero hubo un problema al generar tu sesión. Inténtalo de nuevo."
         };
     }
+  
     const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+  
     const userId = payload.sub || payload.id || payload.userId;
+  
     const cookiesStore = await cookies();
+  
     cookiesStore.set("token", token, {
-        httpOnly: false,
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-    });
-    cookiesStore.set("userId", String(userId), {
         httpOnly: false,
         path: "/",
         maxAge: 60 * 60 * 24 * 7,

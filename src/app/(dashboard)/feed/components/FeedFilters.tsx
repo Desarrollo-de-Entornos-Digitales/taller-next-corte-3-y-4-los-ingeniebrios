@@ -1,6 +1,6 @@
 "use client";
 
-import { PostCategoryResponse } from "../services/post.service";
+import { PostCategoryResponse } from '../../../../common/services/post.service';
 
 const icons: Record<string, string> = {
   Matemáticas: "/icons/mathicon.svg",
