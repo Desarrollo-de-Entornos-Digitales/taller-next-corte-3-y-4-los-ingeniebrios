@@ -39,6 +39,9 @@ export default async function loginAction(email: string, password: string) {
         };
     }
 
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    const userId = payload.sub || payload.id || payload.userId;
+
     // 3. Crear la cookie si todo es correcto
     const cookiesStore = await cookies();
     
@@ -46,6 +49,15 @@ export default async function loginAction(email: string, password: string) {
         httpOnly: true,
         path: "/",
         maxAge: 60 * 60 * 24 * 7, // 1 semana
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+    });
+
+    // Cookie del userId (legible en cliente y servidor)
+    cookiesStore.set("userId", String(userId), {
+        httpOnly: false,
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
     });
