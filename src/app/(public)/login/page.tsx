@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import InputField from "./components/InputField";
-import loginAction from "./login.action"; 
+import loginAction from "./login.action";
 
 export default function Login() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -35,7 +35,16 @@ export default function Login() {
       setErrorMessage(result.message || "Credenciales incorrectas o error en el servidor");
       setIsLoading(false);
     } else {
-      // Hard redirect para que Next.js relea las cookies recién seteadas
+      if (result.userId) {
+        localStorage.setItem("userId", result.userId.toString());
+      }
+      if (result.studentId) {
+        localStorage.setItem("studentId", result.studentId.toString());
+      }
+      if (result.data?.access_token) {
+        localStorage.setItem("token", result.data.access_token);
+      }
+      
       window.location.href = "/feed";
     }
   };

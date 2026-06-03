@@ -1,4 +1,3 @@
-// src/app/(public)/login/login.action.ts
 "use server";
 
 import { cookies } from "next/headers";
@@ -7,9 +6,7 @@ import { loginService } from "./services/login.service";
 export default async function loginAction(email: string, password: string) {
     const result = await loginService.login(email, password);
 
-    // 1. Si las credenciales están mal (el servidor responde 401 o 404)
     if (result.error) {
-        // Hacemos el mensaje mucho más amigable para el estudiante
         if (result.status === 401 || result.status === 404) {
             return {
                 error: true,
@@ -22,7 +19,6 @@ export default async function loginAction(email: string, password: string) {
         };
     }
 
-    // 🔍 Diagnóstico de emergencia para extraer el token donde sea que venga
     let token: string | undefined = undefined;
 
     if (result.data) {
@@ -31,7 +27,6 @@ export default async function loginAction(email: string, password: string) {
                 (result.data as any).data?.access_token;
     }
 
-    // 2. Si definitivamente no encontramos ningún token en la respuesta
     if (!token) {
         return {
             error: true,
@@ -39,20 +34,67 @@ export default async function loginAction(email: string, password: string) {
         };
     }
 
-    // 3. Crear la cookie si todo es correcto
     const cookiesStore = await cookies();
     
     cookiesStore.set("token", token, {
         httpOnly: true,
         path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 1 semana
+        maxAge: 60 * 60 * 24 * 7,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
     });
 
+    let userId: number | null = null;
+    let studentId: number | null = null;
+    let hasSetup: boolean = false;
+
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        const userResponse = await fetch(`${apiUrl}/users/me`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        
+        if (userResponse.ok) {
+            const userInfo = await userResponse.json();
+            userId = userInfo.id;
+            
+            if (userInfo.student) {
+                studentId = userInfo.student.id;
+                hasSetup = !!(userInfo.student.career?.id && userInfo.student.semester);
+            }
+        }
+    } catch (error) {
+        console.error("Error obteniendo usuario:", error);
+    }
+
+    if (userId) {
+        cookiesStore.set("userId", userId.toString(), {
+            httpOnly: true,
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+        });
+    }
+
+    if (studentId) {
+        cookiesStore.set("studentId", studentId.toString(), {
+            httpOnly: true,
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+        });
+    }
+
     return {
         error: false,
         data: result.data,
-        status: result.status
+        status: result.status,
+        userId: userId,
+        studentId: studentId,
+        hasSetup: hasSetup,
     };
 }
