@@ -1,6 +1,5 @@
 // SIN "use client"
 import FeedFilters from "./components/FeedFilters";
-import PostList from "./components/PostList";
 import FeedContent from "./components/FeedContent";
 import { postsService, PostResponse, PostCategoryResponse } from "../../../common/services/post.service";
 

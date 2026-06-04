@@ -1,4 +1,5 @@
 "use client";
+import Link from 'next/link';
 
 import Link from "next/link";
 import Image from "next/image";
@@ -32,7 +33,6 @@ export default function Navbar() {
         </Link>
       </div>
 
-      {/* CENTER */}
       <div className="flex gap-16 font-semibold">
         {links.map(({ label, href }) => {
           const isActive = pathname === href;

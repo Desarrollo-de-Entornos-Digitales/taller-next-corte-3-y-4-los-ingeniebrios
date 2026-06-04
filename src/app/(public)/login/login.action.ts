@@ -49,6 +49,6 @@ export default async function loginAction(email: string, password: string) {
     return {
         error: false,
         data: result.data,
-        status: result.status
+        status: result.status,
     };
 }
