@@ -9,7 +9,7 @@ export default function Navbar() {
   const links = [
     { label: "Pregunta", href: "/questions" },
     { label: "Comunidad", href: "/feed" },
-    { label: "Monitores", href: "/monitores" },
+    { label: "Monitores", href: "/monitors" },
   ];
 
   return (
@@ -52,6 +52,7 @@ export default function Navbar() {
 
       {/* RIGHT */}
       <div>
+        <Link href="/profile">
         <div className="p-[3px] rounded-full border-[3px] border-[#5856D6]">
           <img
             src="/Andy.png"
@@ -59,6 +60,7 @@ export default function Navbar() {
             className="w-12 h-12 rounded-full object-cover"
           />
         </div>
+        </Link>
       </div>
 
     </nav>

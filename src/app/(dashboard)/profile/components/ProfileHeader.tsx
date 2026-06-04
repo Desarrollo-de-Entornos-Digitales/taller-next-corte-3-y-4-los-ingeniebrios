@@ -1,15 +1,13 @@
-// En el ProfileHeader, agregamos useEffect para leer los datos guardados
-
 "use client";
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
 interface ProfileHeaderProps {
-  user?: {
+  user: {
     name: string;
     username: string;
-    avatar?: string;
+    avatar: string;
     level: number;
     friends: number;
     thanks: number;
@@ -18,34 +16,26 @@ interface ProfileHeaderProps {
   };
 }
 
-export default function ProfileHeader({
-  user = {
-    name: "Andy",
-    username: "AndyTheBeast",
-    avatar: "/Andyprofile.png",
-    level: 1,
-    friends: 5,
-    thanks: 6,
-    career: "Interactive Media Design",
-    semester: "First Semester",
-  },
-}: ProfileHeaderProps) {
+export default function ProfileHeader({ user }: ProfileHeaderProps) {
   const [career, setCareer] = useState(user.career);
   const [semester, setSemester] = useState(user.semester);
 
   useEffect(() => {
-    // Leer los datos guardados del feed
-    const savedSetup = localStorage.getItem("userSetup");
-    if (savedSetup) {
-      const data = JSON.parse(savedSetup);
-      setCareer(data.career);
-      setSemester(`${data.semester}° Semestre`);
+    if (user.career && user.career !== "Carrera no asignada") {
+      setCareer(user.career);
+      setSemester(user.semester);
+    } else {
+      const savedSetup = localStorage.getItem("userSetup");
+      if (savedSetup) {
+        const data = JSON.parse(savedSetup);
+        setCareer(data.career);
+        setSemester(`${data.semester}° Semestre`);
+      }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div className="relative mb-20">
-      {/* BACKGROUND */}
       <div className="h-[220px] bg-[#EEF2C9] rounded-b-[40px]" />
 
       <div className="max-w-[1100px] mx-auto px-8 -mt-[110px]">
@@ -55,23 +45,23 @@ export default function ProfileHeader({
             <div className="absolute -top-[80px] left-1/2 -translate-x-1/2 z-20">
               <div className="w-[160px] h-[160px] rounded-full bg-white flex items-center justify-center shadow-lg">
                 <Image
-                  src={user.avatar || "/Andyprofile.png"}
+                  src={user.avatar}
                   alt={user.name}
                   width={145}
                   height={145}
-                  className="rounded-full object-cover"
+                  className="rounded-full object-cover aspect-square"
                 />
               </div>
             </div>
 
-            {/* GREEN CARD */}
+            {/* TARJETA VERDE */}
             <div className="bg-[#D7E95D] rounded-[28px] pt-[95px] px-6 pb-6 relative">
               <button className="absolute top-5 right-5">
                 <Image src="/settings.png" alt="settings" width={28} height={28} />
               </button>
 
               <div className="text-center">
-                <h1 className="text-[28px] font-black tracking-[3px] text-[#1D1D1D]">
+                <h1 className="text-[24px] font-black tracking-[2px] text-[#1D1D1D] truncate px-2">
                   {user.name.toUpperCase()}
                 </h1>
                 <p className="text-[#565656] text-sm mt-1">@{user.username}</p>
@@ -94,13 +84,15 @@ export default function ProfileHeader({
                 </div>
               </div>
 
-              {/* CAREER - Ahora usa los datos guardados */}
+              {/* TARJETA DE LA CARRERA */}
               <div className="bg-[#5856D6] rounded-2xl mt-6 px-4 py-4 flex items-center justify-between">
-                <div>
-                  <p className="text-white font-semibold text-sm leading-tight">{career}</p>
+                <div className="flex-1 min-w-0 pr-2">
+                  <p className="text-white font-semibold text-sm leading-tight break-words">{career}</p>
                   <p className="text-[#D5D5FF] text-xs mt-1">{semester}</p>
                 </div>
-                <Image src="/birrete.png" alt="birrete" width={40} height={40} />
+                <div className="flex-shrink-0">
+                  <Image src="/birrete.png" alt="birrete" width={40} height={40} />
+                </div>
               </div>
             </div>
           </div>

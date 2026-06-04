@@ -19,7 +19,7 @@ export default function ProfilePage() {
         const userPosts = await getUserPosts(currentUser.id);
         setPosts(userPosts);
       } catch (error) {
-        console.error("Error cargando perfil:", error);
+        console.error("Error cargando perfil desde la base de datos:", error);
       } finally {
         setLoading(false);
       }
@@ -31,33 +31,32 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center">
-        <p className="text-[#5856D6] font-semibold text-lg animate-pulse">Cargando perfil...</p>
+        <p className="text-[#5856D6] font-semibold text-lg animate-pulse">Cargando tu perfil...</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#F5F5F7]">
-      {/* ProfileHeader ya incluye su propio banner y todo */}
       <ProfileHeader
         user={{
-          name: user?.name || "Andy",
-          username: user?.username || "AndyTheBeast",
-          avatar: user?.avatar || "/Andyprofile.png",
-          level: user?.student?.level ?? 1,
-          friends: 5,
-          thanks: user?.student?.thanks ?? 6,
-          career: user?.student?.career?.name || "Interactive Media Design",
-          semester: user?.student?.semester ? `Semestre ${user.student.semester}` : "First Semester",
+          name: user?.name || "Usuario",
+          username: user?.username || "username",
+          avatar: user?.avatar || "https://i.pravatar.cc/150",
+          
+          level: user?.student?.level ?? 1,      
+          friends: user?.student?.friends ?? 0,  
+          thanks: user?.student?.thanks ?? 0,  
+          
+          // 🎓 Datos reales del Setup guardados en la BD
+          career: user?.student?.career?.name || "Carrera no asignada",
+          semester: user?.student?.semester ? `${user.student.semester}° Semestre` : "Semestre no asignado",
         }}
       />
 
-      {/* Contenido de publicaciones - fuera del ProfileHeader */}
       <div className="max-w-[1100px] mx-auto px-8 mt-6">
         <div className="flex justify-end">
-          <div className="w-[310px]">
-            {/* Espacio vacío para mantener alineación con el header */}
-          </div>
+          <div className="w-[310px]" />
           
           <div className="flex-1">
             <h2 className="text-[#5856D6] text-2xl font-bold mb-4">

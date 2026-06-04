@@ -45,7 +45,17 @@ export default function Login() {
         localStorage.setItem("token", result.data.access_token);
       }
       
-      window.location.href = "/feed";
+      // =========================================================
+      // IMPLEMENTACIÓN NUEVA: VERIFICACIÓN DEL CONFIG SETUP
+      // =========================================================
+      const saved = localStorage.getItem("userSetup");
+      
+      if (saved && JSON.parse(saved).hasSetup) {
+        window.location.href = "/feed";
+      } else {
+        window.location.href = "/setup";
+      }
+      // =========================================================
     }
   };
 

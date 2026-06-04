@@ -34,10 +34,22 @@ export default function MonitoresPage() {
             Authorization: `Bearer ${token}`,
           },
         });
+        
         const data = await response.json();
-        setMonitors(data);
+
+        // 🧠 VALIDACIÓN CLAVE: NestJS suele envolver la respuesta en un objeto { data: [...] }
+        // Validamos todas las estructuras posibles para asegurar que siempre guardemos un Arreglo ([]).
+        if (Array.isArray(data)) {
+          setMonitors(data);
+        } else if (data && Array.isArray(data.data)) {
+          setMonitors(data.data);
+        } else {
+          console.error("El backend no devolvió un formato de array válido:", data);
+          setMonitors([]);
+        }
       } catch (error) {
         console.error("Error fetching monitors:", error);
+        setMonitors([]); // Evita dejar el estado corrupto si falla la red
       } finally {
         setLoading(false);
       }
@@ -45,15 +57,20 @@ export default function MonitoresPage() {
     fetchMonitores();
   }, []);
 
-  const filtered = monitors.filter((m) => {
-    const q = search.toLowerCase().trim();
-    if (!q) return true;
-    return (
-      m.subject.toLowerCase().includes(q) ||
-      m.availability.toLowerCase().includes(q) ||
-      m.student?.user?.name?.toLowerCase().includes(q)
-    );
-  });
+  // 🛡️ BLINDAJE EXTRA: Nos aseguramos de que 'monitors' sea un array antes de usar .filter()
+  const filtered = Array.isArray(monitors)
+    ? monitors.filter((m) => {
+        const q = search.toLowerCase().trim();
+        if (!q) return true;
+        
+        // Usamos encadenamiento opcional (?.) por seguridad en campos anidados
+        return (
+          m.subject?.toLowerCase().includes(q) ||
+          m.availability?.toLowerCase().includes(q) ||
+          m.student?.user?.name?.toLowerCase().includes(q)
+        );
+      })
+    : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
