@@ -2,14 +2,23 @@
 
 import { PostCategoryResponse } from '../../../../common/services/post.service';
 
-const icons: Record<string, string> = {
-  Matemáticas: "/icons/mathicon.svg",
-  Diseño: "/icons/desingicon.svg",
-  Física: "/icons/physicsicon.svg",
-  Química: "/icons/chemistryicon.svg",
-  Economía: "/icons/economicsicon.svg",
-  Programación: "/icons/programmingicons.svg",
+// 🎨 Mapeo de iconos asignados para cada una de las 5 categorías oficiales de la plataforma
+const categoryIcons: Record<string, string> = {
+  "Negocios y Economía": "/icons/economicsicon.svg",
+  "Ingeniería, Tecnología y Diseño": "/icons/programmingicons.svg",
+  "Ciencias de la Salud y Biológicas": "/icons/chemistryicon.svg",
+  "Leyes, Sociedad y Comportamiento": "/icons/physicsicon.svg", // Usa el icono que prefieras para leyes
+  "Educación y Núcleo Común": "/icons/mathicon.svg" // Usa el icono que prefieras para educación
 };
+
+// 🛡️ Lista oficial de respaldo para garantizar que se rendericen aunque el backend devuelva otra data
+const OFFICIAL_CATEGORIES: PostCategoryResponse[] = [
+  { id: 1, name: "Negocios y Economía" },
+  { id: 2, name: "Ingeniería, Tecnología y Diseño" },
+  { id: 3, name: "Ciencias de la Salud y Biológicas" },
+  { id: 4, name: "Leyes, Sociedad y Comportamiento" },
+  { id: 5, name: "Educación y Núcleo Común" }
+];
 
 interface FeedFiltersProps {
   categories: PostCategoryResponse[];
@@ -18,16 +27,22 @@ interface FeedFiltersProps {
 }
 
 export default function FeedFilters({ categories, selectedCategory, setSelectedCategory }: FeedFiltersProps) {
+  // Usamos las categorías del backend si existen y tienen el formato correcto, de lo contrario usamos la lista oficial
+  const validCategories = categories && categories.some(c => categoryIcons[c.name]) 
+    ? categories 
+    : OFFICIAL_CATEGORIES;
+
   return (
-    <div className="w-64 bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-fit">
-      <div className="flex items-center justify-between mb-6">
+    <div className="w-64 bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-fit flex flex-col gap-5">
+      <div>
         <h2 className="font-bold text-lg text-[#5856D6]">Filtros</h2>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
+        {/* Botón para ver todas las publicaciones */}
         <button
           onClick={() => setSelectedCategory("All categories")}
-          className={`flex items-center gap-3 text-left px-3 py-2 rounded-xl transition-all duration-200 text-sm font-medium
+          className={`flex items-center gap-3 text-left px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-semibold w-full
             ${selectedCategory === "All categories"
               ? "bg-[#EBEBFF] text-[#5856D6]"
               : "text-gray-600 hover:bg-[#F5F5FF] hover:text-[#5856D6]"
@@ -36,33 +51,43 @@ export default function FeedFilters({ categories, selectedCategory, setSelectedC
           <span>All categories</span>
         </button>
 
-        {categories.map((category) => {
+        {/* Renderizado de las 5 categorías académicas reales */}
+        {validCategories.map((category) => {
           const isActive = selectedCategory === category.name;
+          const iconSrc = categoryIcons[category.name] || "/icons/mathicon.svg";
+
           return (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.name)}
-              className={`group flex items-center gap-3 text-left px-3 py-2 rounded-xl transition-all duration-200 text-sm font-medium
+              className={`group flex items-center gap-3 text-left px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium w-full
                 ${isActive
                   ? "bg-[#EBEBFF] text-[#5856D6]"
                   : "text-gray-600 hover:bg-[#F5F5FF] hover:text-[#5856D6]"
                 }`}
             >
-              {icons[category.name] && (
-                <img
-                  src={icons[category.name]}
-                  alt={category.name}
-                  className={`w-5 h-5 object-contain transition duration-200 ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
-                />
-              )}
-              <span>{category.name}</span>
+              <img
+                src={iconSrc}
+                alt={category.name}
+                className={`w-5 h-5 object-contain transition duration-200 ${
+                  isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+                }`}
+              />
+              <span className="leading-tight text-gray-700 group-hover:text-[#5856D6] transition-colors">
+                {category.name}
+              </span>
             </button>
           );
         })}
       </div>
 
-      <div className="mt-8 flex justify-center">
-        <img src="/zarigueya.png" alt="mascot" className="w-100 object-contain" />
+      {/* Ilustración de la mascota con signos de pregunta de tu diseño anterior */}
+      <div className="mt-4 flex justify-center w-full pt-2 border-t border-gray-50">
+        <img 
+          src="/zarigueya.png" 
+          alt="Mascota con dudas" 
+          className="w-full max-w-[150px] object-contain opacity-95" 
+        />
       </div>
     </div>
   );

@@ -5,12 +5,31 @@ import { PostCategoryResponse } from '../../../../common/services/post.service';
 import { FacultyResponse } from '../../../../common/services/faculty.service';
 import { createPostAction } from '../create-post.action';
 
+// 📋 Lista oficial de categorías de preguntas (SQL de respaldo)
+const OFFICIAL_CATEGORIES = [
+  { id: 1, name: "Negocios y Economía" },
+  { id: 2, name: "Ingeniería, Tecnología y Diseño" },
+  { id: 3, name: "Ciencias de la Salud y Biológicas" },
+  { id: 4, name: "Leyes, Sociedad y Comportamiento" },
+  { id: 5, name: "Educación y Núcleo Común" }
+];
+
+// 📋 Lista oficial de Facultades (SQL de respaldo)
+const OFFICIAL_FACULTIES = [
+  { id: 1, name: "Facultad de Ciencias Administrativas y Económicas" },
+  { id: 2, name: "Facultad Barberi de Ingeniería, Diseño y Ciencias Aplicadas" },
+  { id: 3, name: "Facultad de Derecho y Ciencias Sociales" },
+  { id: 4, name: "Facultad de Ciencias de la Salud" },
+  { id: 5, name: "Facultad de Ciencias de la Educación" }
+];
+
 interface QuestionFormProps {
   categories: PostCategoryResponse[];
   faculties: FacultyResponse[];
 }
 
 export default function QuestionForm({ categories, faculties }: QuestionFormProps) {
+  const [title, setTitle] = useState("");
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [facultyId, setFacultyId] = useState<number | "">("");
   const [description, setDescription] = useState("");
@@ -18,9 +37,13 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Verificamos si vienen vacías o incompletas desde el servidor para usar las oficiales
+  const listCategories = categories && categories.length > 0 ? categories : OFFICIAL_CATEGORIES;
+  const listFaculties = faculties && faculties.length > 0 ? faculties : OFFICIAL_FACULTIES;
+
   const handleSubmit = async () => {
-    if (!categoryId || !facultyId || !description.trim()) {
-      setError("Por favor completa todos los campos.");
+    if (!title.trim() || !categoryId || !facultyId || !description.trim()) {
+      setError("Por favor completa todos los campos, incluyendo el título.");
       return;
     }
 
@@ -32,8 +55,14 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
       return;
     }
 
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const userId = Number(payload.sub || payload.id || payload.userId);
+    let userId: number;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      userId = Number(payload.sub || payload.id || payload.userId);
+    } catch (e) {
+      setError("Sesión inválida. Vuelve a iniciar sesión.");
+      return;
+    }
 
     if (!userId) {
       setError("No se pudo identificar tu usuario. Vuelve a iniciar sesión.");
@@ -43,9 +72,11 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
     setLoading(true);
     setError(null);
 
+    // 📡 Enviamos los datos mapeados respetando el CreatePostsDto de NestJS
     const result = await createPostAction({
-      title: description.slice(0, 80),
-      description,
+      title: title.trim(),
+      description: description.trim(),
+      image: "", // Requerido de forma obligatoria por tu backend class-validator
       categoryId: Number(categoryId),
       facultyId: Number(facultyId),
       userId,
@@ -54,13 +85,19 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
     setLoading(false);
 
     if (result.error) {
-      setError(result.message ?? "Error al publicar.");
+      setError(result.message ?? "Error al publicar la pregunta.");
     } else {
       setSuccess(true);
+      setTitle("");
       setDescription("");
       setCategoryId("");
       setFacultyId("");
-      setTimeout(() => setSuccess(false), 3000);
+      
+      // Redirección al feed de la comunidad
+      setTimeout(() => {
+        setSuccess(false);
+        window.location.href = "/feed";
+      }, 1500);
     }
   };
 
@@ -69,56 +106,75 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
       <h2 className="text-lg font-bold text-[#5856D6] mb-5">Haz una pregunta</h2>
 
       <div className="flex gap-6">
-        {/* Columna izquierda */}
-        <div className="flex flex-col gap-3 w-64">
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value === "" ? "" : Number(e.target.value))}
-            className="border border-[#5856D6] rounded-xl px-4 py-2.5 text-sm text-gray-600 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#5856D6]"
-          >
-            <option value="">Selecciona una categoría</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
+        {/* 📐 Columna Izquierda: Selectores e Ilustración de Archivo */}
+        <div className="flex flex-col gap-4 w-64 shrink-0">
+          
+          {/* Dropdown de Categorías de Preguntas */}
+          <div className="relative">
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value === "" ? "" : Number(e.target.value))}
+              className="w-full border border-[#5856D6] rounded-xl px-4 py-2.5 text-sm text-gray-600 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#5856D6] cursor-pointer"
+            >
+              <option value="">Selecciona una categoría</option>
+              {listCategories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            <span className="absolute right-4 top-3.5 pointer-events-none text-xs text-gray-400">▼</span>
+          </div>
 
-          <select
-            value={facultyId}
-            onChange={(e) => setFacultyId(e.target.value === "" ? "" : Number(e.target.value))}
-            className="border border-[#5856D6] rounded-xl px-4 py-2.5 text-sm text-gray-600 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#5856D6]"
-          >
-            <option value="">Selecciona una Facultad</option>
-            {faculties.map((fac) => (
-              <option key={fac.id} value={fac.id}>{fac.name}</option>
-            ))}
-          </select>
+          {/* Dropdown de Facultades de la Universidad */}
+          <div className="relative">
+            <select
+              value={facultyId}
+              onChange={(e) => setFacultyId(e.target.value === "" ? "" : Number(e.target.value))}
+              className="w-full border border-[#5856D6] rounded-xl px-4 py-2.5 text-sm text-gray-600 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#5856D6] cursor-pointer"
+            >
+              <option value="">Selecciona una Facultad</option>
+              {listFaculties.map((fac) => (
+                <option key={fac.id} value={fac.id}>{fac.name}</option>
+              ))}
+            </select>
+            <span className="absolute right-4 top-3.5 pointer-events-none text-xs text-gray-400">▼</span>
+          </div>
 
           <div>
             <p className="text-sm font-bold text-[#5856D6] mb-2">Subir archivo</p>
-            <label className="flex items-center justify-center gap-2 border border-[#5856D6] rounded-xl px-4 py-2.5 cursor-pointer hover:bg-[#EBEBFF] transition-colors">
+            <label className="flex items-center justify-center gap-2 border border-[#5856D6] rounded-xl px-4 py-2.5 cursor-pointer hover:bg-[#EBEBFF] transition-colors bg-white">
               <span className="text-lg">📄</span>
               <input type="file" className="hidden" />
             </label>
           </div>
         </div>
 
-        {/* Columna derecha */}
-        <div className="flex flex-col gap-3 flex-1">
+        {/* 📐 Columna Derecha: Campos de Texto */}
+        <div className="flex flex-col gap-4 flex-1">
+          {/* Entrada del Título */}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Escribe el título de tu pregunta"
+            className="border border-[#5856D6] rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#5856D6] w-full font-semibold"
+          />
+
+          {/* Cuerpo de la descripción */}
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Escribe tu pregunta"
-            rows={5}
+            rows={6}
             className="border border-[#5856D6] rounded-xl px-4 py-3 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-[#5856D6] w-full"
           />
 
-          {error && <p className="text-red-500 text-xs">{error}</p>}
-          {success && <p className="text-green-600 text-xs">¡Pregunta publicada con éxito!</p>}
+          {error && <p className="text-red-500 text-xs font-medium">{error}</p>}
+          {success && <p className="text-green-600 text-xs font-semibold">🎉 ¡Pregunta publicada! Redirigiendo al feed...</p>}
 
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-[#5856D6] text-white rounded-xl py-2.5 text-sm font-bold hover:bg-[#4644c4] transition-colors disabled:opacity-60"
+            className="bg-[#5856D6] text-white rounded-xl py-2.5 text-sm font-bold hover:bg-[#4644c4] transition-colors disabled:opacity-60 w-full mt-2"
           >
             {loading ? "Publicando..." : "Publicar"}
           </button>
