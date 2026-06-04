@@ -1,6 +1,8 @@
 "use server";
+
 import { cookies } from "next/headers";
 import { loginService } from "./services/login.service";
+
 export default async function loginAction(email: string, password: string) {
     const result = await loginService.login(email, password);
 
@@ -18,6 +20,7 @@ export default async function loginAction(email: string, password: string) {
     }
 
     let token: string | undefined = undefined;
+
     if (result.data) {
         token = (result.data as any).access_token || 
                 (result.data as any).token || 
@@ -30,13 +33,11 @@ export default async function loginAction(email: string, password: string) {
             message: "La cuenta existe, pero hubo un problema al generar tu sesión. Inténtalo de nuevo."
         };
     }
-  
+
     const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
-  
     const userId = payload.sub || payload.id || payload.userId;
-  
+
     const cookiesStore = await cookies();
-  
     cookiesStore.set("token", token, {
         httpOnly: false,
         path: "/",
@@ -45,57 +46,9 @@ export default async function loginAction(email: string, password: string) {
         sameSite: "lax",
     });
 
-    let userId: number | null = null;
-    let studentId: number | null = null;
-    let hasSetup: boolean = false;
-
-    try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const userResponse = await fetch(`${apiUrl}/users/me`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        
-        if (userResponse.ok) {
-            const userInfo = await userResponse.json();
-            userId = userInfo.id;
-            
-            if (userInfo.student) {
-                studentId = userInfo.student.id;
-                hasSetup = !!(userInfo.student.career?.id && userInfo.student.semester);
-            }
-        }
-    } catch (error) {
-        console.error("Error obteniendo usuario:", error);
-    }
-
-    if (userId) {
-        cookiesStore.set("userId", userId.toString(), {
-            httpOnly: true,
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-        });
-    }
-
-    if (studentId) {
-        cookiesStore.set("studentId", studentId.toString(), {
-            httpOnly: true,
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-        });
-    }
-
     return {
         error: false,
         data: result.data,
         status: result.status,
-        userId: userId,
-        studentId: studentId,
-        hasSetup: hasSetup,
     };
 }
