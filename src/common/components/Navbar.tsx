@@ -7,7 +7,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const links = [
-    { label: "Pregunta", href: "/pregunta" },
+    { label: "Pregunta", href: "/questions" },
     { label: "Comunidad", href: "/comunidad" },
     { label: "Monitores", href: "/monitores" },
   ];

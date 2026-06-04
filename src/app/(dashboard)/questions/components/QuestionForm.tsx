@@ -24,9 +24,16 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
       return;
     }
 
-    const userId = Number(
-      document.cookie.split("; ").find(r => r.startsWith("userId="))?.split("=")[1]
-    );
+    const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
+      ?? localStorage.getItem("token");
+
+    if (!token) {
+      setError("No se pudo identificar tu usuario. Vuelve a iniciar sesión.");
+      return;
+    }
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const userId = Number(payload.sub || payload.id || payload.userId);
 
     if (!userId) {
       setError("No se pudo identificar tu usuario. Vuelve a iniciar sesión.");
