@@ -1,7 +1,7 @@
 // src/common/services/post.service.ts
 // Agrega getPostById al service que ya tienes
 
-import axiosClient, { ApiResult, safeRequest} from "@/src/lib/axios/client";
+import axiosClient, {ApiResult, safeRequest} from "../../lib/axios/client";
 
 
 

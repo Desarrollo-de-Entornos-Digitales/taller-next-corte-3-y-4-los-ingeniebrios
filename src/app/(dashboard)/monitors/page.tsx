@@ -1,7 +1,7 @@
 "use client";
 
-import MonitorCard from "@/src/common/components/MonitorCard";
 import { useState, useEffect } from "react";
+import MonitorCard from "../../../common/components/MonitorCard";
 
 interface Monitor {
   id: number;
