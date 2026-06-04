@@ -1,8 +1,6 @@
 "use server";
-
 import { cookies } from "next/headers";
 import { loginService } from "./services/login.service";
-
 export default async function loginAction(email: string, password: string) {
     const result = await loginService.login(email, password);
 
@@ -20,7 +18,6 @@ export default async function loginAction(email: string, password: string) {
     }
 
     let token: string | undefined = undefined;
-
     if (result.data) {
         token = (result.data as any).access_token || 
                 (result.data as any).token || 
@@ -33,11 +30,15 @@ export default async function loginAction(email: string, password: string) {
             message: "La cuenta existe, pero hubo un problema al generar tu sesión. Inténtalo de nuevo."
         };
     }
-
+  
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+  
+    const userId = payload.sub || payload.id || payload.userId;
+  
     const cookiesStore = await cookies();
-    
+  
     cookiesStore.set("token", token, {
-        httpOnly: true,
+        httpOnly: false,
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
         secure: process.env.NODE_ENV === "production",

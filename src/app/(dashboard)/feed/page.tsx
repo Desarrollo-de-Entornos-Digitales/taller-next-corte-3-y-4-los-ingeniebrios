@@ -1,7 +1,7 @@
 // SIN "use client"
 import FeedFilters from "./components/FeedFilters";
 import FeedContent from "./components/FeedContent";
-import { postsService, PostResponse, PostCategoryResponse } from "./services/post.service";
+import { postsService, PostResponse, PostCategoryResponse } from "../../../common/services/post.service";
 
 export default async function FeedPage() {
   const [postsResult, categoriesResult] = await Promise.all([

@@ -1,6 +1,9 @@
-// src/app/(dashboard)/feed/services/post.service.ts
+// src/common/services/post.service.ts
+// Agrega getPostById al service que ya tienes
 
-import axiosClient, {ApiResult, safeRequest} from "../../../../lib/axios/client";
+import axiosClient, { ApiResult, safeRequest} from "@/src/lib/axios/client";
+
+
 
 export type PostUserResponse = {
   id: number;
@@ -27,6 +30,15 @@ export type PostResponse = {
   category: PostCategoryResponse;
 };
 
+export type CreatePostDto = {
+  title: string;
+  description: string;
+  categoryId: number;
+  facultyId: number;
+  image?: string | null;
+  userId: number;
+};
+
 export type { ApiResult };
 
 class PostsService {
@@ -34,8 +46,17 @@ class PostsService {
     return safeRequest(axiosClient.get<PostResponse[]>("/posts"));
   }
 
+  // ← NUEVO: usado en la página de comentarios
+  async getPostById(id: number): Promise<ApiResult<PostResponse>> {
+    return safeRequest(axiosClient.get<PostResponse>(`/posts/${id}`));
+  }
+
   async getCategories(): Promise<ApiResult<PostCategoryResponse[]>> {
     return safeRequest(axiosClient.get<PostCategoryResponse[]>("/categories"));
+  }
+
+  async createPost(payload: CreatePostDto): Promise<ApiResult<PostResponse>> {
+    return safeRequest(axiosClient.post<PostResponse>("/posts", payload));
   }
 }
 

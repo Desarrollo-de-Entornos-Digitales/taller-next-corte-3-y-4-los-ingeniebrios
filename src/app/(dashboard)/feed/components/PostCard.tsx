@@ -1,5 +1,10 @@
+"use client";
+// src/app/(dashboard)/feed/components/PostCard.tsx
+// REEMPLAZA tu PostCard.tsx actual
+
 import React from 'react';
-import { postsService, PostResponse } from "../services/post.service";
+import Link from 'next/link';
+import { PostResponse } from '../../../../common/services/post.service';
 
 interface PostCardProps {
   post: PostResponse;
@@ -14,9 +19,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4 flex flex-col gap-3 relative">
 
       <div className="flex items-center gap-3">
-        <img 
-          src={post.user.avatar || "/default-avatar.png"} 
-          alt={post.user.name} 
+        <img
+          src={post.user.avatar || "/default-avatar.png"}
+          alt={post.user.name}
           className="w-12 h-12 rounded-full object-cover border border-gray-200"
         />
         <div className="flex flex-col">
@@ -39,10 +44,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           {post.category.name}
         </span>
 
-        <div className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors">
-          <span className="text-xs font-bold text-gray-600">3</span>
+        {/* Botón de comentarios → navega a /comments/[id] */}
+        <Link
+          href={`/comments/${post.id}`}
+          className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
+        >
           <img src="/comment.svg" alt="comments" className="w-4 h-4 opacity-50" />
-        </div>
+        </Link>
       </div>
     </div>
   );
