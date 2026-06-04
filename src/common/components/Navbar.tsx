@@ -1,4 +1,5 @@
 "use client";
+import Link from 'next/link';
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,14 +16,12 @@ export default function Navbar() {
   return (
     <nav className="w-full h-20 bg-white shadow-sm flex items-center justify-between px-10">
 
-      {/* LEFT */}
       <div className="flex items-center">
         <button className="text-[#5856D6] text-3xl hover:opacity-80 transition">
           ☰
         </button>
       </div>
 
-      {/* CENTER */}
       <div className="flex gap-16 font-semibold">
         {links.map(({ label, href }) => {
           const isActive = pathname === href;
