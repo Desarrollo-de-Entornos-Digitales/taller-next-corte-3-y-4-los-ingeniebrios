@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
@@ -8,7 +9,7 @@ export default function Navbar() {
 
   const links = [
     { label: "Pregunta", href: "/questions" },
-    { label: "Comunidad", href: "/comunidad" },
+    { label: "Comunidad", href: "/feed" },
     { label: "Monitores", href: "/monitores" },
   ];
 
@@ -16,10 +17,19 @@ export default function Navbar() {
     <nav className="w-full h-20 bg-white shadow-sm flex items-center justify-between px-10">
 
       {/* LEFT */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-4">
         <button className="text-[#5856D6] text-3xl hover:opacity-80 transition">
           ☰
         </button>
+        <Link href="/feed">
+          <Image
+            src="/IcesiConnect.png"
+            alt="Icesi Connect"
+            width={160}
+            height={40}
+            className="object-contain"
+          />
+        </Link>
       </div>
 
       {/* CENTER */}
