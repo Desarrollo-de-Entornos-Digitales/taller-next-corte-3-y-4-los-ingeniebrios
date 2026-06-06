@@ -28,6 +28,7 @@ export type PostResponse = {
   createdAt: string;
   user: PostUserResponse;
   category: PostCategoryResponse;
+  answers?: { id: number }[]; 
 };
 
 export type CreatePostDto = {

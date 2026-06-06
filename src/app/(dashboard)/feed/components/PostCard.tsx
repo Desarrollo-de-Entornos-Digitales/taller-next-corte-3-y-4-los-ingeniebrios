@@ -64,6 +64,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           href={`/comments/${post.id}`}
           className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
         >
+          <span className="text-xs font-bold text-gray-600">
+            {post.answers?.length ?? 0}
+          </span>
           <img src="/comment.svg" alt="comments" className="w-4 h-4 opacity-50" />
         </Link>
       </div>

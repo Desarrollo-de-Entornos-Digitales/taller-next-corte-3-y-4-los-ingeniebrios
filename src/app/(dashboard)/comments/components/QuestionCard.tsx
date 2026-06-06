@@ -4,7 +4,6 @@ import { PostResponse } from "../../../../common/services/post.service";
 
 type Props = {
   post: PostResponse;
-  onReply: () => void;
 };
 
 function timeAgo(dateStr: string): string {
@@ -16,20 +15,19 @@ function timeAgo(dateStr: string): string {
   return `Hace ${Math.floor(hrs / 24)} día(s)`;
 }
 
-export default function QuestionCard({ post, onReply }: Props) {
+export default function QuestionCard({ post }: Props) {
   const level = post.user.student?.level ?? 1;
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
       <h2 className="font-bold text-[#5856D6] text-base">Pregunta ¿?</h2>
 
-      {/* Tarjeta azul */}
       <div className="rounded-2xl bg-[#5856D6] text-white p-5 flex flex-col gap-4">
-
-        {/* Autor */}
         <div className="flex items-center gap-3">
           <img
-            src={post.user.avatar || "/default-avatar.png"}
+            src={post.user.avatar && post.user.avatar.startsWith("data:")
+              ? post.user.avatar
+              : `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(post.user.name)}`}
             alt={post.user.name}
             className="w-10 h-10 rounded-full object-cover border-2 border-white/40"
           />
@@ -41,10 +39,8 @@ export default function QuestionCard({ post, onReply }: Props) {
           </div>
         </div>
 
-        {/* Texto */}
         <p className="text-sm leading-relaxed">{post.description}</p>
 
-        {/* Imagen opcional */}
         {post.image && (
           <img
             src={post.image}
@@ -52,16 +48,6 @@ export default function QuestionCard({ post, onReply }: Props) {
             className="rounded-xl max-h-48 object-contain bg-white/10"
           />
         )}
-
-        {/* Botón responder */}
-        <div className="flex justify-end">
-          <button
-            onClick={onReply}
-            className="bg-white text-[#5856D6] font-semibold text-sm px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors"
-          >
-            Responder
-          </button>
-        </div>
       </div>
     </div>
   );

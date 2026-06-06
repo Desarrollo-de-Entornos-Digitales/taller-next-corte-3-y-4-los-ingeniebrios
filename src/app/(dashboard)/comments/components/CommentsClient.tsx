@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { PostResponse } from "../../../../common/services/post.service";
 import { getAnswersByPostAction } from "../actions/create-answer.action";
 import QuestionCard from "./QuestionCard";
@@ -14,8 +14,7 @@ type Props = {
 export default function CommentsClient({ post }: Props) {
   const [answers, setAnswers] = useState<any[]>([]);
   const [loadingAnswers, setLoadingAnswers] = useState(true);
-  const [isPending, startTransition] = useTransition();
-  const formRef = useRef<HTMLDivElement>(null);
+  const [, startTransition] = useTransition();
 
   const fetchAnswers = () => {
     startTransition(async () => {
@@ -30,28 +29,18 @@ export default function CommentsClient({ post }: Props) {
     fetchAnswers();
   }, [post.id]);
 
-  const scrollToForm = () => {
-    formRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-        {/* ── Izquierda ── */}
+        {/* Izquierda */}
         <div className="flex flex-col gap-6">
-          <QuestionCard post={post} onReply={scrollToForm} />
+          <QuestionCard post={post} />
 
-          <div className="flex justify-end pe-4 -mt-4">
-            <img src="/mascot.png" alt="mascota" className="w-20 opacity-90" />
-          </div>
-
-          <div ref={formRef}>
-            <AnswerForm postId={post.id} onAnswerSent={fetchAnswers} />
-          </div>
+          <AnswerForm postId={post.id} onAnswerSent={fetchAnswers} />
         </div>
 
-        {/* ── Derecha: Respuestas ── */}
+        {/* Derecha: Respuestas */}
         <div className="flex flex-col gap-4">
           {loadingAnswers ? (
             <div className="flex justify-center py-16">

@@ -11,11 +11,11 @@ export default function AnswerCard({ answer }: Props) {
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-3">
-
-      {/* Autor */}
       <div className="flex items-center gap-3">
         <img
-          src={answer.user.avatar || "/default-avatar.png"}
+          src={answer.user.avatar && answer.user.avatar.startsWith("data:")
+            ? answer.user.avatar
+            : `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(answer.user.name)}`}
           alt={answer.user.name}
           className="w-10 h-10 rounded-full object-cover border border-gray-200"
         />
@@ -24,10 +24,10 @@ export default function AnswerCard({ answer }: Props) {
         </p>
       </div>
 
-      {/* Respuesta */}
-      <p className="text-gray-700 text-sm leading-relaxed">{answer.description}</p>
+      <p className="text-gray-700 text-sm leading-relaxed">
+        {answer.content ?? answer.description}
+      </p>
 
-      {/* Imagen opcional */}
       {answer.image && (
         <img
           src={answer.image}
@@ -36,7 +36,6 @@ export default function AnswerCard({ answer }: Props) {
         />
       )}
 
-      {/* Botón gracias */}
       <div className="flex justify-end">
         <button className="flex items-center gap-1.5 text-[#5856D6] text-sm font-semibold hover:opacity-70 transition-opacity">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
