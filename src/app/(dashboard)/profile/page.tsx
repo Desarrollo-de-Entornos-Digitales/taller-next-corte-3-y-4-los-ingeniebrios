@@ -18,7 +18,7 @@ export default function ProfilePage() {
         const userPosts = await getUserPosts(currentUser.id);
         setPosts(userPosts);
       } catch (error) {
-        console.error("Error cargando perfil desde la base de datos:", error);
+        console.error("Error cargando perfil:", error);
       } finally {
         setLoading(false);
       }
@@ -48,32 +48,8 @@ export default function ProfilePage() {
           career: user?.student?.career?.name || "Carrera no asignada",
           semester: user?.student?.semester ? `${user.student.semester}° Semestre` : "Semestre no asignado",
         }}
+        posts={posts}
       />
-
-      <div className="max-w-[1100px] mx-auto px-8 mt-6">
-        <div className="flex justify-end">
-          <div className="w-[310px]" />
-          <div className="flex-1">
-            <h2 className="text-[#5856D6] text-2xl font-bold mb-4">
-              Tus publicaciones
-            </h2>
-            {posts.length === 0 ? (
-              <div className="bg-white rounded-[20px] p-8 text-center shadow-sm">
-                <p className="text-gray-400 text-sm">
-                  No tienes publicaciones aún. ¡Crea tu primera pregunta!
-                </p>
-              </div>
-            ) : (
-              posts.map((post) => (
-                <ProfilePostCard
-                  key={post.id}
-                  post={post}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

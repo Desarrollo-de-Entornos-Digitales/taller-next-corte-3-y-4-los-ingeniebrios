@@ -45,6 +45,7 @@ export default function Login() {
         localStorage.setItem("token", result.data.access_token);
       }
       
+      
       // =========================================================
       // IMPLEMENTACIÓN NUEVA: VERIFICACIÓN DEL CONFIG SETUP
       // =========================================================

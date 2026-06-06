@@ -1,17 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  images: {
-    dangerouslyAllowSVG: true,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'i.pravatar.cc',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
