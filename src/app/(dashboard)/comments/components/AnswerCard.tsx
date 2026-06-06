@@ -9,6 +9,24 @@ type Props = {
 export default function AnswerCard({ answer }: Props) {
   const level = answer.user.student?.level ?? 1;
 
+  // 🕒 Capturamos la fecha de forma segura intentando ambas nomenclaturas
+  const rawDate = answer.createdAt || (answer as any).created_at;
+
+  // 🛠️ Aplicamos EXACTAMENTE el mismo formateador de tu Feed
+  let timeAgo = "";
+  if (rawDate) {
+    try {
+      timeAgo = new Date(rawDate).toLocaleString('es-CO', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (e) {
+      console.error("Error formateando la fecha de la respuesta:", e);
+    }
+  }
+
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-3">
       <div className="flex items-center gap-3">
@@ -19,9 +37,14 @@ export default function AnswerCard({ answer }: Props) {
           alt={answer.user.name}
           className="w-10 h-10 rounded-full object-cover border border-gray-200"
         />
-        <p className="font-semibold text-gray-800 text-sm">
-          {answer.user.name} – Nivel {level}
-        </p>
+        {/* Usamos flex-col para que la fecha se posicione abajo, idéntico al layout del feed */}
+        <div className="flex flex-col flex-1">
+          <span className="font-bold text-gray-800 text-sm leading-tight">
+            {answer.user.name} – Nivel {level}
+          </span>
+          {/* Pintamos la fecha con la clase text-gray-400 que usas en el feed */}
+          {timeAgo && <span className="text-xs text-gray-400">{timeAgo}</span>}
+        </div>
       </div>
 
       <p className="text-gray-700 text-sm leading-relaxed">
