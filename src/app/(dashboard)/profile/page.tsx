@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ProfileHeader from "./components/ProfileHeader";
-import PostCard from "./components/PostCard";
+import ProfilePostCard from "./components/ProfilePostCard";
 import { getCurrentUser, getUserPosts, User, Post } from "./services/profile.service";
 
 export default function ProfilePage() {
@@ -71,12 +71,9 @@ export default function ProfilePage() {
               </div>
             ) : (
               posts.map((post) => (
-                <PostCard
+                <ProfilePostCard
                   key={post.id}
-                  title={post.title}
-                  hasProblem={!!post.image}
-                  image={post.image}
-                  comments={post.answers?.length ?? 0}
+                  post={post}
                 />
               ))
             )}

@@ -1,0 +1,49 @@
+"use client";
+
+interface ProfilePostCardProps {
+  post: {
+    id: number;
+    title: string;
+    description: string;
+    image?: string;
+    answers?: any[];
+    createdAt: string;
+  };
+}
+
+export default function ProfilePostCard({ post }: ProfilePostCardProps) {
+  const date = new Date(post.createdAt).toLocaleDateString("es-CO", {
+    day: "numeric",
+    month: "short",
+  });
+
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-semibold text-gray-800">
+          {post.title}
+        </h3>
+
+        <span className="text-xs text-gray-400">
+          {date}
+        </span>
+      </div>
+
+      <p className="text-sm text-gray-600 mb-4">
+        {post.description}
+      </p>
+
+      <div className="flex justify-between items-center">
+        <span className="text-xs text-[#5856D6] font-medium">
+          {post.answers?.length ?? 0} respuestas
+        </span>
+
+        {post.solved && (
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+            Resuelto
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
