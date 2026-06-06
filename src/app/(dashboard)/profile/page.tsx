@@ -15,7 +15,6 @@ export default function ProfilePage() {
       try {
         const currentUser = await getCurrentUser();
         setUser(currentUser);
-
         const userPosts = await getUserPosts(currentUser.id);
         setPosts(userPosts);
       } catch (error) {
@@ -24,7 +23,6 @@ export default function ProfilePage() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -40,15 +38,13 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#F5F5F7]">
       <ProfileHeader
         user={{
+          id: user?.id ?? 0,
           name: user?.name || "Usuario",
           username: user?.username || "username",
-          avatar: user?.avatar || "https://i.pravatar.cc/150",
-          
-          level: user?.student?.level ?? 1,      
-          friends: user?.student?.friends ?? 0,  
-          thanks: user?.student?.thanks ?? 0,  
-          
-          // 🎓 Datos reales del Setup guardados en la BD
+          avatar: user?.avatar || "/avatar.png",
+          level: user?.student?.level ?? 1,
+          friends: user?.student?.friends ?? 0,
+          thanks: user?.student?.thanks ?? 0,
           career: user?.student?.career?.name || "Carrera no asignada",
           semester: user?.student?.semester ? `${user.student.semester}° Semestre` : "Semestre no asignado",
         }}
@@ -57,12 +53,10 @@ export default function ProfilePage() {
       <div className="max-w-[1100px] mx-auto px-8 mt-6">
         <div className="flex justify-end">
           <div className="w-[310px]" />
-          
           <div className="flex-1">
             <h2 className="text-[#5856D6] text-2xl font-bold mb-4">
               Tus publicaciones
             </h2>
-
             {posts.length === 0 ? (
               <div className="bg-white rounded-[20px] p-8 text-center shadow-sm">
                 <p className="text-gray-400 text-sm">
