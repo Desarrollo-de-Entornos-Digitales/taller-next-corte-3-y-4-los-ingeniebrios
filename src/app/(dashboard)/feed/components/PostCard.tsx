@@ -1,11 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PostResponse } from '../../../../common/services/post.service';
 
 interface PostCardProps {
   post: PostResponse;
+  onDeleted?: (id: number) => void;
 }
 
 const getAvatar = (avatar: string | null, name: string) => {
@@ -13,7 +14,48 @@ const getAvatar = (avatar: string | null, name: string) => {
   return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(name)}`;
 };
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const checkIsAdmin = (): boolean => {
+  try {
+    const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
+      ?? localStorage.getItem("token");
+    if (!token) return false;
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return Array.isArray(payload.permissions) && payload.permissions.includes("delete_post");
+  } catch {
+    return false;
+  }
+};
+
+const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    setIsAdmin(checkIsAdmin());
+  }, []);
+
+  const handleDelete = async () => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este post?")) return;
+    setDeleting(true);
+    try {
+      const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
+        ?? localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/${post.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        onDeleted?.(post.id);
+      } else {
+        alert("No se pudo eliminar el post.");
+      }
+    } catch {
+      alert("Error al eliminar el post.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const timeAgo = new Date(post.createdAt).toLocaleString('es-CO', {
     day: 'numeric',
     month: 'short',
@@ -30,12 +72,22 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           alt={post.user.name}
           className="w-12 h-12 rounded-full object-cover border border-gray-200"
         />
-        <div className="flex flex-col">
+        <div className="flex flex-col flex-1">
           <span className="font-bold text-gray-800 text-sm leading-tight">
             {post.user.name} - Nivel: {post.user.student?.level ?? 1}
           </span>
           <span className="text-xs text-gray-400">{timeAgo}</span>
         </div>
+
+        {isAdmin && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="ml-auto flex items-center gap-1 bg-red-50 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-50"
+          >
+            {deleting ? "Eliminando..." : "🗑 Eliminar"}
+          </button>
+        )}
       </div>
 
       <div className="mt-1">
