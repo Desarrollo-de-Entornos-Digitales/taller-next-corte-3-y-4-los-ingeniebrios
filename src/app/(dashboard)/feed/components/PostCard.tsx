@@ -1,6 +1,4 @@
 "use client";
-// src/app/(dashboard)/feed/components/PostCard.tsx
-// REEMPLAZA tu PostCard.tsx actual
 
 import React from 'react';
 import Link from 'next/link';
@@ -10,20 +8,25 @@ interface PostCardProps {
   post: PostResponse;
 }
 
+const getAvatar = (avatar: string | null, name: string) => {
+  if (avatar && avatar.startsWith("data:")) return avatar;
+  return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(name)}`;
+};
+
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const timeAgo = new Date(post.createdAt).toLocaleString('es-CO', {
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-});
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4 flex flex-col gap-3 relative">
 
       <div className="flex items-center gap-3">
         <img
-          src={post.user.avatar || "/default-avatar.png"}
+          src={getAvatar(post.user.avatar, post.user.name)}
           alt={post.user.name}
           className="w-12 h-12 rounded-full object-cover border border-gray-200"
         />
@@ -57,7 +60,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           {post.category.name}
         </span>
 
-        {/* Botón de comentarios → navega a /comments/[id] */}
         <Link
           href={`/comments/${post.id}`}
           className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
