@@ -25,7 +25,7 @@ export type PostResponse = {
   description: string;
   image: string | null;
   solved: boolean;
-  created_at: string;
+  createdAt: string;
   user: PostUserResponse;
   category: PostCategoryResponse;
 };

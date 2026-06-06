@@ -11,9 +11,12 @@ interface PostCardProps {
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
-  const timeAgo = new Date(post.created_at).toLocaleDateString('es-CO', {
-    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-  });
+  const timeAgo = new Date(post.createdAt).toLocaleString('es-CO', {
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4 flex flex-col gap-3 relative">
