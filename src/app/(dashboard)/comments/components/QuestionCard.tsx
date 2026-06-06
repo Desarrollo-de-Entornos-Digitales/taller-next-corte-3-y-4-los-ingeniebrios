@@ -7,12 +7,17 @@ type Props = {
 };
 
 function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
+  if (!dateStr) return "Hace un momento";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "Hace un momento";
+  const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Hace un momento";
   if (mins < 60) return `Hace ${mins} min`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `Hace ${hrs} hora${hrs > 1 ? "s" : ""}`;
-  return `Hace ${Math.floor(hrs / 24)} día(s)`;
+  const days = Math.floor(hrs / 24);
+  return `Hace ${days} día${days > 1 ? "s" : ""}`;
 }
 
 export default function QuestionCard({ post }: Props) {
@@ -35,7 +40,7 @@ export default function QuestionCard({ post }: Props) {
             <p className="font-semibold text-sm">
               {post.user.name} – {post.category.name} – Nivel {level}
             </p>
-            <p className="text-xs text-white/60">{timeAgo(post.created_at)}</p>
+            <p className="text-xs text-white/60">{timeAgo(post.created_at || (post as any).createdAt)}</p>
           </div>
         </div>
 
