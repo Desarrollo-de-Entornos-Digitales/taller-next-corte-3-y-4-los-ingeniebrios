@@ -7,7 +7,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("token="))
+    ?.split("=")[1];
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -39,13 +42,14 @@ export interface User {
 export interface Post {
   id: number;
   title: string;
+  description: string;
   image?: string;
   answers?: any[];
+  createdAt: string;
 }
 
-
 export const getCurrentUser = async (): Promise<User> => {
-  const response = await api.get("/auth/profile");
+  const response = await api.get("/users/me");
   return response.data;
 };
 
