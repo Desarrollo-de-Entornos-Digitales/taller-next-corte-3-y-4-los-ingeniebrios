@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface ProfileHeaderProps {
   user: {
+    id: number;
     name: string;
     username: string;
     avatar: string;
@@ -19,8 +20,12 @@ interface ProfileHeaderProps {
 export default function ProfileHeader({ user }: ProfileHeaderProps) {
   const [career, setCareer] = useState(user.career);
   const [semester, setSemester] = useState(user.semester);
+  const [avatar, setAvatar] = useState(user.avatar || "/avatar.png");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    setAvatar(user.avatar || "/avatar.png");
     if (user.career && user.career !== "Carrera no asignada") {
       setCareer(user.career);
       setSemester(user.semester);
@@ -34,6 +39,53 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
     }
   }, [user]);
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/me/avatar`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ avatar: base64 }),
+        }
+      );
+
+      if (response.ok) {
+        setAvatar(base64);
+      } else {
+        alert("No se pudo actualizar la foto. Intenta de nuevo.");
+      }
+    } catch (error) {
+      console.error("Error subiendo avatar:", error);
+      alert("Ocurrió un error al subir la foto.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="relative mb-20">
       <div className="h-[220px] bg-[#EEF2C9] rounded-b-[40px]" />
@@ -43,15 +95,33 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
           <div className="relative w-[310px]">
             {/* AVATAR */}
             <div className="absolute -top-[80px] left-1/2 -translate-x-1/2 z-20">
-              <div className="w-[160px] h-[160px] rounded-full bg-white flex items-center justify-center shadow-lg">
+              <div
+                className="w-[160px] h-[160px] rounded-full bg-white flex items-center justify-center shadow-lg relative cursor-pointer group"
+                onClick={handleAvatarClick}
+              >
                 <Image
-                  src={user.avatar}
+                  src={avatar}
                   alt={user.name}
                   width={145}
                   height={145}
                   className="rounded-full object-cover aspect-square"
+                  unoptimized
                 />
+                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {uploading ? (
+                    <span className="text-white text-xs font-semibold">Subiendo...</span>
+                  ) : (
+                    <span className="text-white text-xs font-semibold">Cambiar foto</span>
+                  )}
+                </div>
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
             </div>
 
             {/* TARJETA VERDE */}
