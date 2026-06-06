@@ -42,6 +42,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </p>
       </div>
 
+      {post.image && (
+        <div className="w-full overflow-hidden rounded-xl border border-gray-100 flex justify-center">
+          <img
+            src={post.image}
+            alt="Imagen de la publicación"
+            className="max-w-full max-h-[300px] h-auto w-auto"
+          />
+        </div>
+      )}
+
       <div className="flex justify-between items-center mt-2">
         <span className="px-3 py-1 bg-[#EBEBFF] text-[#5856D6] rounded-full text-[10px] font-bold">
           {post.category.name}

@@ -36,10 +36,27 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
 
   // Verificamos si vienen vacías o incompletas desde el servidor para usar las oficiales
   const listCategories = categories && categories.length > 0 ? categories : OFFICIAL_CATEGORIES;
   const listFaculties = faculties && faculties.length > 0 ? faculties : OFFICIAL_FACULTIES;
+  const uploadImageToCloudinary = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "IcesiConnect");
+
+    const response = await fetch(
+      "https://api.cloudinary.com/v1_1/duvapylkz/image/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+    return data.secure_url;
+  };
 
   const handleSubmit = async () => {
     if (!title.trim() || !categoryId || !facultyId || !description.trim()) {
@@ -72,11 +89,17 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
     setLoading(true);
     setError(null);
 
+    let imageUrl = "";
+
+    if (image) {
+      imageUrl = await uploadImageToCloudinary(image);
+    }
+
     // 📡 Enviamos los datos mapeados respetando el CreatePostsDto de NestJS
     const result = await createPostAction({
       title: title.trim(),
       description: description.trim(),
-      image: "", // Requerido de forma obligatoria por tu backend class-validator
+      image: imageUrl,
       categoryId: Number(categoryId),
       facultyId: Number(facultyId),
       userId,
@@ -140,11 +163,27 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
           </div>
 
           <div>
-            <p className="text-sm font-bold text-[#5856D6] mb-2">Subir archivo</p>
+            <p className="text-sm font-bold text-[#5856D6] mb-2">Subir imagen</p>
             <label className="flex items-center justify-center gap-2 border border-[#5856D6] rounded-xl px-4 py-2.5 cursor-pointer hover:bg-[#EBEBFF] transition-colors bg-white">
               <span className="text-lg">📄</span>
-              <input type="file" className="hidden" />
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+
+                  if (file) {
+                    setImage(file);
+                  }
+                }}
+              />
             </label>
+            {image && (
+              <p className="text-xs text-gray-500 mt-2">
+                {image.name}
+              </p>
+            )}
           </div>
         </div>
 
