@@ -9,7 +9,6 @@ interface Career {
   name: string;
 }
 
-// 🎓 Lista oficial de carreras sincronizada perfectamente con los IDs del Seeding SQL
 const ACADEMIC_CAREERS: Career[] = [
   { id: 1, name: "Ingeniería de Sistemas" },
   { id: 2, name: "Ingeniería Telemática" },
@@ -71,11 +70,30 @@ export default function SetupPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // Si ya hizo setup, va directo al feed
     const saved = localStorage.getItem("userSetup");
     if (saved && JSON.parse(saved).hasSetup) {
       router.replace("/feed");
       return;
     }
+
+    // Si es admin, saltar setup y ir directo al feed
+    const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
+      ?? localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const permissions: string[] = payload.permissions ?? [];
+        if (permissions.includes("manage_users")) {
+          localStorage.setItem("userSetup", JSON.stringify({ hasSetup: true }));
+          router.replace("/feed");
+          return;
+        }
+      } catch {
+        // token inválido, continuar con el setup normal
+      }
+    }
+
     loadCareers();
   }, []);
 
@@ -99,20 +117,18 @@ export default function SetupPage() {
     try {
       const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
         ?? localStorage.getItem("token");
-        
+
       if (!token) {
         setError("Sesión expirada. Vuelve a iniciar sesión.");
         setSaving(false);
         return;
       }
 
-      // 1. Extraer ID del usuario desde el JWT
       const payload = JSON.parse(atob(token.split(".")[1]));
       const userId = payload.sub || payload.id || payload.userId;
 
-      // 2. Obtener la entidad Student mapeada al User
       const studentResult = await clientRequest(`/students/user/${userId}`);
-      
+
       if (studentResult.error || !studentResult.data) {
         setError("Tu cuenta de usuario no tiene un perfil de estudiante asignado.");
         setSaving(false);
@@ -120,14 +136,13 @@ export default function SetupPage() {
       }
 
       const studentId = studentResult.data.id;
-      
+
       if (!studentId) {
         setError("Error de consistencia en el perfil del estudiante.");
         setSaving(false);
         return;
       }
 
-      // 3. Envío de la actualización apuntando a la propiedad correcta: id_career
       const rawResponse = await fetch(`${API_URL}/students/${studentId}`, {
         method: "PATCH",
         headers: {
@@ -135,14 +150,14 @@ export default function SetupPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          id_career: Number(selectedCareerId), // Sincronizado con CreateStudentDto
+          id_career: Number(selectedCareerId),
           semester: Number(selectedSemester),
         }),
       });
 
       if (!rawResponse.ok) {
         const errorText = await rawResponse.text();
-        console.error(`[Setup] El backend de NestJS respondió con código ${rawResponse.status}:`, errorText);
+        console.error(`[Setup] Error ${rawResponse.status}:`, errorText);
         setError("Error al guardar en el servidor. Intenta de nuevo.");
         setSaving(false);
         return;
@@ -150,7 +165,6 @@ export default function SetupPage() {
 
       await rawResponse.json();
 
-      // 4. Cachear localmente el estado del setup
       const selectedCareer = careers.find(c => c.id === selectedCareerId);
       localStorage.setItem("userSetup", JSON.stringify({
         career: selectedCareer?.name,
@@ -161,7 +175,7 @@ export default function SetupPage() {
 
       router.replace("/feed");
     } catch (e) {
-      console.error("[Setup] Excepción crítica:", e);
+      console.error("[Setup] Excepción:", e);
       setError("Error inesperado en el proceso.");
       setSaving(false);
     }
@@ -188,7 +202,6 @@ export default function SetupPage() {
             <p className="text-center text-[#5454E9] animate-pulse font-medium">Cargando carreras...</p>
           ) : (
             <>
-              {/* Selector de Carrera */}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold text-gray-700">Tu carrera</label>
                 <div className="relative">
@@ -206,7 +219,6 @@ export default function SetupPage() {
                 </div>
               </div>
 
-              {/* Selector de Semestre */}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold text-gray-700">Tu semestre</label>
                 <div className="grid grid-cols-5 gap-2">

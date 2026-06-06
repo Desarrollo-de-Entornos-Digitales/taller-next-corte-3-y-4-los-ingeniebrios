@@ -8,33 +8,36 @@ export default function Navbar() {
   const pathname = usePathname();
   const [avatar, setAvatar] = useState("/avatar.png");
 
-  useEffect(() => {
-    const fetchAvatar = async () => {
-      try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("token="))
-          ?.split("=")[1];
+  const fetchAvatar = async () => {
+    try {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1] ?? localStorage.getItem("token");
 
-        if (!token) return;
+      if (!token) return;
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.avatar) setAvatar(data.avatar);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.avatar && data.avatar.startsWith("data:")) {
+          setAvatar(data.avatar);
+        } else {
+          setAvatar("/avatar.png");
         }
-      } catch (error) {
-        console.error("Error cargando avatar:", error);
       }
-    };
+    } catch (error) {
+      console.error("Error cargando avatar:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchAvatar();
-  }, []);
+  }, [pathname]);
 
   const links = [
     { label: "Pregunta", href: "/questions" },
