@@ -2,9 +2,39 @@
 import Link from 'next/link';
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [avatar, setAvatar] = useState("/avatar.png");
+
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      try {
+        const token = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("token="))
+          ?.split("=")[1];
+
+        if (!token) return;
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.avatar) setAvatar(data.avatar);
+        }
+      } catch (error) {
+        console.error("Error cargando avatar:", error);
+      }
+    };
+
+    fetchAvatar();
+  }, []);
 
   const links = [
     { label: "Pregunta", href: "/questions" },
@@ -53,13 +83,13 @@ export default function Navbar() {
       {/* RIGHT */}
       <div>
         <Link href="/profile">
-        <div className="p-[3px] rounded-full border-[3px] border-[#5856D6]">
-          <img
-            src="/Andy.png"
-            alt="profile"
-            className="w-12 h-12 rounded-full object-cover"
-          />
-        </div>
+          <div className="p-[3px] rounded-full border-[3px] border-[#5856D6]">
+            <img
+              src={avatar}
+              alt="profile"
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          </div>
         </Link>
       </div>
 
