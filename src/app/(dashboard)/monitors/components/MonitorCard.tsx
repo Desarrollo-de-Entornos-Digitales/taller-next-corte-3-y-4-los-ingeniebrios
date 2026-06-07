@@ -1,3 +1,6 @@
+"use client";
+
+import Link from "next/link";
 import { MonitorResponse } from "../services/monitor.service";
 
 interface MonitorCardProps {
@@ -12,6 +15,7 @@ const getAvatar = (avatar: string | null | undefined, name: string) => {
 export default function MonitorCard({ monitor }: MonitorCardProps) {
   const studentName = monitor.student?.user?.name || "Estudiante Icesi";
   const avatarUrl = getAvatar(monitor.student?.user?.avatar, studentName);
+  const monitorUserId = monitor.student?.user?.id;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col items-center text-center transition-all duration-200 hover:shadow-md">
@@ -34,6 +38,22 @@ export default function MonitorCard({ monitor }: MonitorCardProps) {
       <p className="text-xs text-gray-500 mt-auto pt-2 border-t border-gray-50 w-full line-clamp-2">
         ⏰ {monitor.availability || "Horario por definir"}
       </p>
+
+      {monitorUserId ? (
+        <Link
+          href={`/chat/${monitorUserId}`}
+          className="mt-4 w-full bg-[#5856D6] text-white text-sm font-semibold py-2 rounded-full hover:bg-[#4745c0] transition-colors text-center"
+        >
+          Mensaje
+        </Link>
+      ) : (
+        <button
+          disabled
+          className="mt-4 w-full bg-gray-200 text-gray-400 text-sm font-semibold py-2 rounded-full cursor-not-allowed"
+        >
+          Mensaje
+        </button>
+      )}
     </div>
   );
 }
