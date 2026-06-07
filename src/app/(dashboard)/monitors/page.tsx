@@ -10,7 +10,6 @@ export default async function MonitoresPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Banner */}
       <div className="relative h-44 flex items-center px-14 overflow-hidden">
         <img
           src="/hero-monitores.png"
