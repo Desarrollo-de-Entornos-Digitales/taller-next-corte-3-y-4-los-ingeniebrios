@@ -1,4 +1,4 @@
-import { getCurrentUserAction, getConversationAction } from "../actions/chat.action";
+import { getCurrentUserAction, getConversationAction, getAllMessagesAction } from "../actions/chat.action";
 import ChatClient from "../components/ChatClient";
 import axiosClient, { safeRequest } from "../../../../lib/axios/client";
 
@@ -10,10 +10,10 @@ export default async function ChatPage({ params }: Props) {
   const { id } = await params;
   const receiverId = Number(id);
 
-  // Obtener usuario logueado y receptor en paralelo
-  const [meResult, receiverResult] = await Promise.all([
+  const [meResult, receiverResult, allMessagesResult] = await Promise.all([
     getCurrentUserAction(),
     safeRequest(axiosClient.get<any>(`/users/${receiverId}`)),
+    getAllMessagesAction(),
   ]);
 
   if (meResult.error) {
@@ -34,8 +34,12 @@ export default async function ChatPage({ params }: Props) {
 
   const me = meResult.data;
   const receiver = receiverResult.data;
+  const allMessages = allMessagesResult.error ? [] : allMessagesResult.data;
 
-  // Cargar mensajes iniciales en el servidor
+  const myMessages = allMessages.filter(
+    (m: any) => m.sender.id === me.id || m.receiver.id === me.id
+  );
+
   const convoResult = await getConversationAction(me.id, receiverId);
   const initialMessages = convoResult.error ? [] : convoResult.data;
 
@@ -44,6 +48,7 @@ export default async function ChatPage({ params }: Props) {
       me={me}
       receiver={receiver}
       initialMessages={initialMessages}
+      allMessages={myMessages}
     />
   );
 }

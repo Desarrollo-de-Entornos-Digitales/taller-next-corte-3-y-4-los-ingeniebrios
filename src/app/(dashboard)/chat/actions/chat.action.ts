@@ -16,12 +16,10 @@ export type MessageResponse = {
   receiver: { id: number; name: string; avatar: string | null };
 };
 
-// ✅ Obtiene el usuario logueado desde el servidor (cookie httpOnly)
 export async function getCurrentUserAction(): Promise<ApiResult<CurrentUser>> {
   return safeRequest(axiosClient.get<CurrentUser>("/users/me"));
 }
 
-// ✅ Trae la conversación entre dos usuarios
 export async function getConversationAction(
   user1: number,
   user2: number
@@ -31,7 +29,10 @@ export async function getConversationAction(
   );
 }
 
-// ✅ Envía un mensaje
+export async function getAllMessagesAction(): Promise<ApiResult<MessageResponse[]>> {
+  return safeRequest(axiosClient.get<MessageResponse[]>("/message"));
+}
+
 export async function sendMessageAction(
   content: string,
   senderId: number,
