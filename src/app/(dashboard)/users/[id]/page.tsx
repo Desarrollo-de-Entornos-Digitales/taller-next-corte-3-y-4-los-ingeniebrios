@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-import ProfileHeader from "../../profile/components/ProfileHeader";
+import ProfileHeader from "../../../../common/components/ProfileHeader";
 
 import {
   getUserById,

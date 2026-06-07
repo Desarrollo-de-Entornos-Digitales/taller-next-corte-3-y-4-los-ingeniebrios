@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import ProfileHeader from "./components/ProfileHeader";
+import ProfileHeader from "../../../common/components/ProfileHeader";
 import { getCurrentUser, getUserPosts, User, Post } from "./services/profile.service";
 
 export default function ProfilePage() {
