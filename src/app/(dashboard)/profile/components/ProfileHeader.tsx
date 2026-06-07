@@ -19,12 +19,13 @@ interface ProfileHeaderProps {
     semester: string;
   };
   posts: Post[];
+  isOwnProfile?: boolean;
 }
 
 const getValidAvatar = (avatar: string) =>
   avatar && avatar.startsWith("data:") ? avatar : "/avatar.png";
 
-export default function ProfileHeader({ user, posts }: ProfileHeaderProps) {
+export default function ProfileHeader({ user, posts, isOwnProfile = false, }: ProfileHeaderProps) {
   const router = useRouter();
   const [career, setCareer] = useState(user.career);
   const [semester, setSemester] = useState(user.semester);
@@ -100,7 +101,7 @@ export default function ProfileHeader({ user, posts }: ProfileHeaderProps) {
             <div className="absolute -top-[70px] left-1/2 -translate-x-1/2 z-20">
               <div
                 className="w-[140px] h-[140px] rounded-full bg-white flex items-center justify-center shadow-lg relative cursor-pointer group"
-                onClick={handleAvatarClick}
+                onClick={isOwnProfile ? handleAvatarClick : undefined}
               >
                 <Image
                   src={avatar}
@@ -110,20 +111,24 @@ export default function ProfileHeader({ user, posts }: ProfileHeaderProps) {
                   className="rounded-full object-cover aspect-square"
                   unoptimized
                 />
-                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span className="text-white text-xs font-semibold">
-                    {uploading ? "Subiendo..." : "Cambiar foto"}
-                  </span>
-                </div>
+                {isOwnProfile && (
+                  <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white text-xs font-semibold">
+                      {uploading ? "Subiendo..." : "Cambiar foto"}
+                    </span>
+                  </div>
+                )}
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </div>
 
             {/* TARJETA VERDE */}
             <div className="bg-[#D7E95D] rounded-[28px] pt-[85px] px-6 pb-6 relative">
+              {isOwnProfile && (
               <button className="absolute top-5 right-5">
                 <Image src="/settings.png" alt="settings" width={26} height={26} />
               </button>
+              )}
 
               <div className="text-center">
                 <h1 className="text-[22px] font-black tracking-[2px] text-[#1D1D1D] truncate px-2">
@@ -162,7 +167,9 @@ export default function ProfileHeader({ user, posts }: ProfileHeaderProps) {
 
           {/* PUBLICACIONES DERECHA */}
           <div className="flex-1 mt-[120px]">
-            <h2 className="text-[#5856D6] text-2xl font-bold mb-4">Tus publicaciones</h2>
+            <h2 className="text-[#5856D6] text-2xl font-bold mb-4">
+              {isOwnProfile ? "Tus publicaciones" : "Publicaciones"}
+            </h2>
             {posts.length === 0 ? (
               <div className="bg-white rounded-[20px] p-8 text-center shadow-sm border border-gray-100">
                 <p className="text-gray-400 text-sm">No tienes publicaciones aún. ¡Crea tu primera pregunta!</p>

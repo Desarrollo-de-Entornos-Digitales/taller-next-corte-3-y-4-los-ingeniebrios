@@ -67,11 +67,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4 flex flex-col gap-3 relative">
 
       <div className="flex items-center gap-3">
-        <img
-          src={getAvatar(post.user.avatar, post.user.name)}
-          alt={post.user.name}
-          className="w-12 h-12 rounded-full object-cover border border-gray-200"
-        />
+        <Link href={`/users/${post.user.id}`}>
+          <img
+            src={getAvatar(post.user.avatar, post.user.name)}
+            alt={post.user.name}
+            className="w-12 h-12 rounded-full object-cover border border-gray-200 cursor-pointer hover:opacity-80 transition"
+          />
+        </Link>
+        
         <div className="flex flex-col flex-1">
           <span className="font-bold text-gray-800 text-sm leading-tight">
             {post.user.name} - Nivel: {post.user.student?.level ?? 1}

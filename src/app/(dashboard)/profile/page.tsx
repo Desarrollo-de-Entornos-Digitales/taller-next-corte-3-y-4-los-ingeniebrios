@@ -49,6 +49,7 @@ export default function ProfilePage() {
           semester: user?.student?.semester ? `${user.student.semester}° Semestre` : "Semestre no asignado",
         }}
         posts={posts}
+        isOwnProfile={true}
       />
     </div>
   );
