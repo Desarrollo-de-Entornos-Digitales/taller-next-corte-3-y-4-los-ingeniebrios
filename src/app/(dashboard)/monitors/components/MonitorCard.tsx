@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { MonitorResponse } from "../services/monitor.service";
 
@@ -33,6 +34,7 @@ export default function MonitorCard({ monitor, onDeleted }: MonitorCardProps) {
   const [deleting, setDeleting] = useState(false);
   const studentName = monitor.student?.user?.name || "Estudiante Icesi";
   const avatarUrl = getAvatar(monitor.student?.user?.avatar, studentName);
+  const monitorUserId = monitor.student?.user?.id;
 
   useEffect(() => {
     setIsAdmin(checkIsAdmin());
@@ -79,6 +81,22 @@ export default function MonitorCard({ monitor, onDeleted }: MonitorCardProps) {
       <p className="text-xs text-gray-500 mt-auto pt-2 border-t border-gray-50 w-full line-clamp-2">
         ⏰ {monitor.availability || "Horario por definir"}
       </p>
+
+      {monitorUserId ? (
+        <Link
+          href={`/chat/${monitorUserId}`}
+          className="mt-4 w-full bg-[#5856D6] text-white text-sm font-semibold py-2 rounded-full hover:bg-[#4745c0] transition-colors text-center"
+        >
+          Mensaje
+        </Link>
+      ) : (
+        <button
+          disabled
+          className="mt-4 w-full bg-gray-200 text-gray-400 text-sm font-semibold py-2 rounded-full cursor-not-allowed"
+        >
+          Mensaje
+        </button>
+      )}
     </div>
   );
 }
