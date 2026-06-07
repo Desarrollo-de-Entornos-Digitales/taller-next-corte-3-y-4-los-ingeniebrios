@@ -1,16 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import ProfileHeader from "./components/ProfileHeader";
-import ProfilePostCard from "./components/ProfilePostCard";
 import { getCurrentUser, getUserPosts, User, Post } from "./services/profile.service";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
+      ?? localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        if (payload.permissions?.includes("manage_users")) {
+          router.replace("/admin");
+          return;
+        }
+      } catch {}
+    }
+
     const fetchData = async () => {
       try {
         const currentUser = await getCurrentUser();

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import MonitorCard from "./components/MonitorCard";
-import { monitorService } from "./services/monitors.service";
+import { monitorService, MonitorResponse } from "./services/monitors.service";
 
 export default function MonitoresPage() {
   const [monitors, setMonitors] = useState<MonitorResponse[]>([]);
@@ -14,25 +14,23 @@ export default function MonitoresPage() {
     const loadMonitors = async () => {
       setLoading(true);
       setErrorMessage(null);
-      
       const result = await monitorService.getMonitors();
-      
       if (result.error) {
         setErrorMessage(result.message || "No se pudieron cargar los monitores.");
       }
-      
       setMonitors(result.data);
       setLoading(false);
     };
-
     loadMonitors();
   }, []);
 
-  // Filtrado reactivo ultra seguro
+  const handleDeleted = (id: number) => {
+    setMonitors(prev => prev.filter(m => m.id !== id));
+  };
+
   const filtered = monitors.filter((m) => {
     const query = search.toLowerCase().trim();
     if (!query) return true;
-    
     return (
       m.subject?.toLowerCase().includes(query) ||
       m.availability?.toLowerCase().includes(query) ||
@@ -42,7 +40,6 @@ export default function MonitoresPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Banner */}
       <div className="relative h-44 flex items-center px-14 overflow-hidden">
         <img
           src="/hero-monitores.png"
@@ -55,10 +52,7 @@ export default function MonitoresPage() {
         </h1>
       </div>
 
-      {/* Main Content Container */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        
-        {/* Search Bar */}
         <div className="flex justify-center mb-8">
           <div className="relative w-full max-w-md">
             <input
@@ -68,38 +62,30 @@ export default function MonitoresPage() {
               placeholder="Buscar por materia, horario o nombre..."
               className="w-full border border-gray-200 rounded-full py-2.5 pl-5 pr-12 text-sm text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
             />
-            <img
-              src="/lupa.png"
-              alt="buscar"
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 opacity-60"
-            />
+            <img src="/lupa.png" alt="buscar" className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 opacity-60" />
           </div>
         </div>
 
-        {/* Loading Spinner / State */}
         {loading && (
           <div className="text-center text-gray-400 mt-20 text-base animate-pulse">
             Cargando el cuerpo de monitores de Icesi...
           </div>
         )}
 
-        {/* Error Feedback */}
         {!loading && errorMessage && (
           <div className="text-center text-red-500 mt-10 text-sm font-medium bg-red-50 border border-red-100 rounded-xl p-4 max-w-md mx-auto">
             ⚠️ {errorMessage}
           </div>
         )}
 
-        {/* Grid de Monitores Mapeado */}
         {!loading && !errorMessage && filtered.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filtered.map((monitor) => (
-              <MonitorCard key={monitor.id} monitor={monitor} />
+              <MonitorCard key={monitor.id} monitor={monitor} onDeleted={handleDeleted} />
             ))}
           </div>
         )}
 
-        {/* Empty State */}
         {!loading && !errorMessage && filtered.length === 0 && (
           <div className="text-center text-gray-400 mt-20 text-base">
             No se encontraron monitores para &ldquo;{search}&rdquo;

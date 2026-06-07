@@ -20,7 +20,7 @@ const checkIsAdmin = (): boolean => {
       ?? localStorage.getItem("token");
     if (!token) return false;
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return Array.isArray(payload.permissions) && payload.permissions.includes("delete_post");
+    return Array.isArray(payload.permissions) && payload.permissions.includes("manage_users");
   } catch {
     return false;
   }
@@ -29,6 +29,8 @@ const checkIsAdmin = (): boolean => {
 const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const [reported, setReported] = useState(false);
 
   useEffect(() => {
     setIsAdmin(checkIsAdmin());
@@ -56,6 +58,32 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
     }
   };
 
+  const handleReport = async () => {
+    const reason = prompt("¿Por qué quieres reportar esta publicación?");
+    if (!reason?.trim()) return;
+    setReporting(true);
+    const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
+      ?? localStorage.getItem("token");
+    const payload = JSON.parse(atob(token!.split(".")[1]));
+    const reporterId = payload.sub || payload.id;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        reason,
+        reporterId,
+        reportedId: post.user.id,
+        status: "pending",
+      }),
+    });
+    setReporting(false);
+    if (res.ok) setReported(true);
+    else alert("No se pudo enviar el reporte.");
+  };
+
   const timeAgo = new Date(post.createdAt).toLocaleString('es-CO', {
     day: 'numeric',
     month: 'short',
@@ -65,7 +93,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4 flex flex-col gap-3 relative">
-
       <div className="flex items-center gap-3">
         <Link href={`/users/${post.user.id}`}>
           <img
@@ -74,7 +101,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
             className="w-12 h-12 rounded-full object-cover border border-gray-200 cursor-pointer hover:opacity-80 transition"
           />
         </Link>
-        
+
         <div className="flex flex-col flex-1">
           <span className="font-bold text-gray-800 text-sm leading-tight">
             {post.user.name} - Nivel: {post.user.student?.level ?? 1}
@@ -95,18 +122,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
 
       <div className="mt-1">
         <h3 className="font-semibold text-gray-800 text-sm mb-1">{post.title}</h3>
-        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
-          {post.description}
-        </p>
+        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">{post.description}</p>
       </div>
 
       {post.image && (
         <div className="w-full overflow-hidden rounded-xl border border-gray-100 flex justify-center">
-          <img
-            src={post.image}
-            alt="Imagen de la publicación"
-            className="max-w-full max-h-[300px] h-auto w-auto"
-          />
+          <img src={post.image} alt="Imagen de la publicación" className="max-w-full max-h-[300px] h-auto w-auto" />
         </div>
       )}
 
@@ -115,15 +136,29 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
           {post.category.name}
         </span>
 
-        <Link
-          href={`/comments/${post.id}`}
-          className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
-        >
-          <span className="text-xs font-bold text-gray-600">
-            {post.answers?.length ?? 0}
-          </span>
-          <img src="/comment.svg" alt="comments" className="w-4 h-4 opacity-50" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {!isAdmin && (
+            <button
+              onClick={handleReport}
+              disabled={reporting || reported}
+              className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl transition-colors ${
+                reported
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-red-50 text-red-400 hover:bg-red-100"
+              }`}
+            >
+              {reported ? "✓ Reportado" : reporting ? "..." : "⚑ Reportar"}
+            </button>
+          )}
+
+          <Link
+            href={`/comments/${post.id}`}
+            className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
+          >
+            <span className="text-xs font-bold text-gray-600">{post.answers?.length ?? 0}</span>
+            <img src="/comment.svg" alt="comments" className="w-4 h-4 opacity-50" />
+          </Link>
+        </div>
       </div>
     </div>
   );

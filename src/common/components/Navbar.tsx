@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 export default function Navbar() {
   const pathname = usePathname();
   const [avatar, setAvatar] = useState("/avatar.png");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchAvatar = async () => {
     try {
@@ -16,6 +17,12 @@ export default function Navbar() {
         ?.split("=")[1] ?? localStorage.getItem("token");
 
       if (!token) return;
+
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const permissions: string[] = payload.permissions ?? [];
+        setIsAdmin(permissions.includes("manage_users"));
+      } catch {}
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -40,27 +47,18 @@ export default function Navbar() {
   }, [pathname]);
 
   const links = [
-    { label: "Pregunta", href: "/questions" },
+    ...(!isAdmin ? [{ label: "Pregunta", href: "/questions" }] : []),
     { label: "Comunidad", href: "/feed" },
     { label: "Monitores", href: "/monitors" },
+    ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   return (
     <nav className="w-full h-20 bg-white shadow-sm flex items-center justify-between px-10">
-
-      {/* LEFT */}
       <div className="flex items-center gap-4">
-        <button className="text-[#5856D6] text-3xl hover:opacity-80 transition">
-          ☰
-        </button>
+        <button className="text-[#5856D6] text-3xl hover:opacity-80 transition">☰</button>
         <Link href="/feed">
-          <Image
-            src="/IcesiConnect.png"
-            alt="Icesi Connect"
-            width={160}
-            height={40}
-            className="object-contain"
-          />
+          <Image src="/IcesiConnect.png" alt="Icesi Connect" width={160} height={40} className="object-contain" />
         </Link>
       </div>
 
@@ -83,19 +81,13 @@ export default function Navbar() {
         })}
       </div>
 
-      {/* RIGHT */}
       <div>
-        <Link href="/profile">
+        <Link href={isAdmin ? "/admin" : "/profile"}>
           <div className="p-[3px] rounded-full border-[3px] border-[#5856D6]">
-            <img
-              src={avatar}
-              alt="profile"
-              className="w-12 h-12 rounded-full object-cover"
-            />
+            <img src={avatar} alt="profile" className="w-12 h-12 rounded-full object-cover" />
           </div>
         </Link>
       </div>
-
     </nav>
   );
 }
