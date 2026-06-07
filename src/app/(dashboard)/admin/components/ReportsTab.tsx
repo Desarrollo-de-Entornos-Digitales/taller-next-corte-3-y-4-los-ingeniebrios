@@ -73,7 +73,7 @@ export default function ReportsTab() {
           disabled={loading}
           className="bg-[#5856D6] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-[#4644c4] transition disabled:opacity-60"
         >
-          {loading ? "Verificando..." : "🔍 Verificar reportes"}
+          {loading ? "Verificando..." : "Verificar reportes"}
         </button>
       </div>
 
@@ -87,7 +87,7 @@ export default function ReportsTab() {
             <>
               {pending.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-bold text-red-500 mb-3">⚠️ Pendientes ({pending.length})</h3>
+                  <h3 className="text-sm font-bold text-red-500 mb-3">Pendientes ({pending.length})</h3>
                   <div className="flex flex-col gap-3">
                     {pending.map((report) => (
                       <div key={report.id} className="bg-white rounded-2xl p-5 border border-red-100 shadow-sm flex justify-between items-start gap-4">
@@ -107,13 +107,13 @@ export default function ReportsTab() {
                             onClick={() => resolveReport(report.id)}
                             className="bg-green-50 text-green-600 text-xs font-bold px-3 py-2 rounded-xl hover:bg-green-100 transition"
                           >
-                            ✓ Resolver
+                            Resolver
                           </button>
                           <button
                             onClick={() => deleteReport(report.id)}
                             className="bg-red-50 text-red-500 text-xs font-bold px-3 py-2 rounded-xl hover:bg-red-100 transition"
                           >
-                            🗑 Eliminar
+                            Eliminar
                           </button>
                         </div>
                       </div>
@@ -124,7 +124,7 @@ export default function ReportsTab() {
 
               {resolved.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-bold text-green-600 mb-3">✅ Resueltos ({resolved.length})</h3>
+                  <h3 className="text-sm font-bold text-green-600 mb-3">Resueltos ({resolved.length})</h3>
                   <div className="flex flex-col gap-3">
                     {resolved.map((report) => (
                       <div key={report.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex justify-between items-center gap-4 opacity-60">
