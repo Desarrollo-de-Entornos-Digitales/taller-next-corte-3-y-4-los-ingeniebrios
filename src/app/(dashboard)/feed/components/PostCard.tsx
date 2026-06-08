@@ -47,20 +47,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportError, setReportError] = useState("");
 
-
-  const token = getToken();
   let isAdmin = false;
   let isOwner = false;
 
-
-  if (token) {
+  if (typeof window !== "undefined") {
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      isAdmin = Array.isArray(payload.permissions) && payload.permissions.includes("manage_users");
-      isOwner = Number(payload.sub) === post.user.id;
+      const token = getToken();
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        isAdmin = Array.isArray(payload.permissions) && payload.permissions.includes("manage_users");
+        isOwner = Number(payload.sub) === post.user.id;
+      }
     } catch {}
   }
-
 
   const handleDelete = async () => {
     if (!confirm("¿Estás seguro de que quieres eliminar este post?")) return;
