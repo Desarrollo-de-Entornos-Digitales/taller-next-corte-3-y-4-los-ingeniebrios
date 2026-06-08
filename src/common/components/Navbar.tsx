@@ -84,7 +84,7 @@ export default function Navbar() {
   useEffect(() => {
     if (!myId || isAdmin) return;
     fetchUnreadCount(myId);
-    const interval = setInterval(() => fetchUnreadCount(myId), 30_000);
+    const interval = setInterval(() => fetchUnreadCount(myId), 5_000);
     return () => clearInterval(interval);
   }, [myId, isAdmin, fetchUnreadCount]);
 
@@ -274,7 +274,11 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {!isAdmin && (
           <button
-            onClick={() => { setIsModalOpen(true); setHasChecked(false); }}
+            onClick={() => {
+              setIsModalOpen(true);
+              setHasChecked(false);
+              loadNotifications();
+            }}
             className="p-2 rounded-full hover:bg-gray-100 transition relative" aria-label="Notificaciones">
             <span className="text-2xl">🔔</span>
             {unreadCount > 0 && (
