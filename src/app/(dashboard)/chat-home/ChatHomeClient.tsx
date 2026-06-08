@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageResponse, FriendUser } from "../chat/actions/chat.action";
 
 type User = { id: number; name: string; avatar: string | null };
@@ -46,6 +46,28 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors, stu
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<Tab>("chats");
   const conversations = buildConversations(allMessages, me.id);
+  const [seen, setSeen] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    const seenRaw = localStorage.getItem(`chat_seen_${me.id}`);
+    setSeen(seenRaw ? JSON.parse(seenRaw) : {});
+  }, [me.id]);
+
+  useEffect(() => {
+    const handler = () => {
+      const seenRaw = localStorage.getItem(`chat_seen_${me.id}`);
+      setSeen(seenRaw ? JSON.parse(seenRaw) : {});
+    };
+    window.addEventListener("chatRead", handler);
+    return () => window.removeEventListener("chatRead", handler);
+  }, [me.id]);
+
+  function countUnread(senderId: number): number {
+    const lastSeen = seen[senderId] ?? 0;
+    return allMessages.filter(
+      m => m.sender.id === senderId && m.receiver.id === me.id && m.id > lastSeen
+    ).length;
+  }
 
   const tabs: Tab[] = isMonitor
     ? ["chats", "amigos", "estudiantes", "monitores"]
@@ -57,12 +79,10 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors, stu
   const filteredFriends = friends.filter(f =>
     f.name.toLowerCase().includes(search.toLowerCase())
   );
- 
   const filteredMonitors = monitors.filter(m =>
     m.student?.user?.id !== me.id &&
     (m.student?.user?.name ?? "").toLowerCase().includes(search.toLowerCase())
   );
- 
   const filteredStudents = students.filter(s =>
     s.user?.id !== me.id &&
     (s.user?.name ?? "").toLowerCase().includes(search.toLowerCase())
@@ -94,39 +114,66 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors, stu
         </div>
 
         <div className="flex-1 overflow-y-auto">
+
           {tab === "chats" && (
             <>
               {filteredConvos.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">Aún no tienes conversaciones.</p>}
-              {filteredConvos.map((convo) => (
-                <a key={convo.user.id} href={`/chat/${convo.user.id}`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
-                >
-                  <img src={getAvatar(convo.user.avatar, convo.user.name)} alt={convo.user.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{convo.user.name}</p>
-                      <span className="text-[10px] text-gray-400 flex-shrink-0 ml-1" suppressHydrationWarning>
-                        {formatTimeShort(convo.lastMessage.createdAt)}
-                      </span>
+              {filteredConvos.map((convo) => {
+                const unread = countUnread(convo.user.id);
+                return (
+                  <a key={convo.user.id} href={`/chat/${convo.user.id}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
+                  >
+                    <img src={getAvatar(convo.user.avatar, convo.user.name)} alt={convo.user.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center">
+                        <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
+                          {convo.user.name}
+                        </p>
+                        <span className="text-[10px] text-gray-400 flex-shrink-0 ml-1" suppressHydrationWarning>
+                          {formatTimeShort(convo.lastMessage.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p className={`text-xs truncate ${unread > 0 ? "text-gray-700 font-medium" : "text-gray-400"}`}>
+                          {convo.lastMessage.content}
+                        </p>
+                        {unread > 0 && (
+                          <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400 truncate">{convo.lastMessage.content}</p>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                );
+              })}
             </>
           )}
 
           {tab === "amigos" && (
             <>
               {filteredFriends.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">No tienes amigos agregados aún.</p>}
-              {filteredFriends.map((friend) => (
-                <a key={friend.id} href={`/chat/${friend.id}`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
-                >
-                  <img src={getAvatar(friend.avatar, friend.name)} alt={friend.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
-                  <p className="font-semibold text-gray-800 text-sm truncate">{friend.name}</p>
-                </a>
-              ))}
+              {filteredFriends.map((friend) => {
+                const unread = countUnread(friend.id);
+                return (
+                  <a key={friend.id} href={`/chat/${friend.id}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
+                  >
+                    <img src={getAvatar(friend.avatar, friend.name)} alt={friend.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                    <div className="flex-1 min-w-0 flex justify-between items-center">
+                      <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
+                        {friend.name}
+                      </p>
+                      {unread > 0 && (
+                        <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                          {unread > 9 ? "9+" : unread}
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                );
+              })}
             </>
           )}
 
@@ -138,13 +185,21 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors, stu
                 const avatar = student.user?.avatar ?? null;
                 const userId = student.user?.id;
                 if (!userId) return null;
+                const unread = countUnread(userId);
                 return (
                   <a key={student.id} href={`/chat/${userId}`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
                   >
                     <img src={getAvatar(avatar, name)} alt={name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+                      <div className="flex justify-between items-center">
+                        <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>{name}</p>
+                        {unread > 0 && (
+                          <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-400 truncate">{student.career?.name ?? ""}</p>
                     </div>
                   </a>
@@ -161,13 +216,21 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors, stu
                 const avatar = monitor.student?.user?.avatar ?? null;
                 const userId = monitor.student?.user?.id;
                 if (!userId) return null;
+                const unread = countUnread(userId);
                 return (
                   <a key={monitor.id} href={`/chat/${userId}`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
                   >
                     <img src={getAvatar(avatar, name)} alt={name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+                      <div className="flex justify-between items-center">
+                        <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>{name}</p>
+                        {unread > 0 && (
+                          <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-400 truncate">{monitor.subject}</p>
                     </div>
                   </a>

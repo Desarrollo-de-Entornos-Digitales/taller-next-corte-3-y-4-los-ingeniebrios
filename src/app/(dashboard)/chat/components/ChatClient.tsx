@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import {
   getConversationAction,
   sendMessageAction,
@@ -8,11 +8,7 @@ import {
   FriendUser,
 } from "../actions/chat.action";
 
-type User = {
-  id: number;
-  name: string;
-  avatar: string | null;
-};
+type User = { id: number; name: string; avatar: string | null };
 
 type Props = {
   me: User;
@@ -71,8 +67,39 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
   const [conversations, setConversations] = useState(() => buildConversations(allMessages, me.id));
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<Tab>("chats");
+  const [seen, setSeen] = useState<Record<number, number>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
+  const markedRef = useRef<number | null>(null); 
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    const seenRaw = localStorage.getItem(`chat_seen_${me.id}`);
+    setSeen(seenRaw ? JSON.parse(seenRaw) : {});
+  }, [me.id]);
+
+  useEffect(() => {
+    if (markedRef.current === receiver.id) return;
+    const seenRaw = localStorage.getItem(`chat_seen_${me.id}`);
+    const currentSeen: Record<number, number> = seenRaw ? JSON.parse(seenRaw) : {};
+    const msgs = allMessages.filter(m => m.sender.id === receiver.id && m.receiver.id === me.id);
+    if (msgs.length === 0) {
+      markedRef.current = receiver.id;
+      return;
+    }
+    const lastId = Math.max(...msgs.map(m => m.id));
+    currentSeen[receiver.id] = lastId;
+    localStorage.setItem(`chat_seen_${me.id}`, JSON.stringify(currentSeen));
+    setSeen(currentSeen);
+    markedRef.current = receiver.id;
+    window.dispatchEvent(new Event("chatRead"));
+  }, [receiver.id]); // ✅ solo depende de receiver.id
+
+  function countUnread(senderId: number): number {
+    const lastSeen = seen[senderId] ?? 0;
+    return allMessages.filter(
+      m => m.sender.id === senderId && m.receiver.id === me.id && m.id > lastSeen
+    ).length;
+  }
 
   const tabs: Tab[] = isMonitor
     ? ["chats", "amigos", "estudiantes", "monitores"]
@@ -156,39 +183,67 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
         </div>
 
         <div className="flex-1 overflow-y-auto">
+
           {tab === "chats" && (
             <>
               {filteredConvos.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">Aún no tienes conversaciones.</p>}
-              {filteredConvos.map((convo) => (
-                <a key={convo.user.id} href={`/chat/${convo.user.id}`}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${convo.user.id === receiver.id ? "bg-[#EBEBFF]" : ""}`}
-                >
-                  <img src={getAvatar(convo.user.avatar, convo.user.name)} alt={convo.user.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{convo.user.name}</p>
-                      <span className="text-[10px] text-gray-400 flex-shrink-0 ml-1" suppressHydrationWarning>
-                        {formatTimeShort(convo.lastMessage.createdAt)}
-                      </span>
+              {filteredConvos.map((convo) => {
+                const unread = countUnread(convo.user.id);
+                const isActive = convo.user.id === receiver.id;
+                return (
+                  <a key={convo.user.id} href={`/chat/${convo.user.id}`}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${isActive ? "bg-[#EBEBFF]" : ""}`}
+                  >
+                    <img src={getAvatar(convo.user.avatar, convo.user.name)} alt={convo.user.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center">
+                        <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
+                          {convo.user.name}
+                        </p>
+                        <span className="text-[10px] text-gray-400 flex-shrink-0 ml-1" suppressHydrationWarning>
+                          {formatTimeShort(convo.lastMessage.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p className={`text-xs truncate ${unread > 0 ? "text-gray-700 font-medium" : "text-gray-400"}`}>
+                          {convo.lastMessage.content}
+                        </p>
+                        {unread > 0 && (
+                          <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400 truncate">{convo.lastMessage.content}</p>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                );
+              })}
             </>
           )}
 
           {tab === "amigos" && (
             <>
               {filteredFriends.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">No tienes amigos agregados aún.</p>}
-              {filteredFriends.map((friend) => (
-                <a key={friend.id} href={`/chat/${friend.id}`}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${friend.id === receiver.id ? "bg-[#EBEBFF]" : ""}`}
-                >
-                  <img src={getAvatar(friend.avatar, friend.name)} alt={friend.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
-                  <p className="font-semibold text-gray-800 text-sm truncate">{friend.name}</p>
-                </a>
-              ))}
+              {filteredFriends.map((friend) => {
+                const unread = countUnread(friend.id);
+                return (
+                  <a key={friend.id} href={`/chat/${friend.id}`}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${friend.id === receiver.id ? "bg-[#EBEBFF]" : ""}`}
+                  >
+                    <img src={getAvatar(friend.avatar, friend.name)} alt={friend.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                    <div className="flex-1 min-w-0 flex justify-between items-center">
+                      <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
+                        {friend.name}
+                      </p>
+                      {unread > 0 && (
+                        <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                          {unread > 9 ? "9+" : unread}
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                );
+              })}
             </>
           )}
 
@@ -200,13 +255,21 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
                 const avatar = student.user?.avatar ?? null;
                 const userId = student.user?.id;
                 if (!userId) return null;
+                const unread = countUnread(userId);
                 return (
                   <a key={student.id} href={`/chat/${userId}`}
                     className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${userId === receiver.id ? "bg-[#EBEBFF]" : ""}`}
                   >
                     <img src={getAvatar(avatar, name)} alt={name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+                      <div className="flex justify-between items-center">
+                        <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>{name}</p>
+                        {unread > 0 && (
+                          <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-400 truncate">{student.career?.name ?? ""}</p>
                     </div>
                   </a>
@@ -223,13 +286,21 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
                 const avatar = monitor.student?.user?.avatar ?? null;
                 const userId = monitor.student?.user?.id;
                 if (!userId) return null;
+                const unread = countUnread(userId);
                 return (
                   <a key={monitor.id} href={`/chat/${userId}`}
                     className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${userId === receiver.id ? "bg-[#EBEBFF]" : ""}`}
                   >
                     <img src={getAvatar(avatar, name)} alt={name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+                      <div className="flex justify-between items-center">
+                        <p className={`text-sm truncate ${unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>{name}</p>
+                        {unread > 0 && (
+                          <span className="ml-2 min-w-[18px] h-[18px] bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-400 truncate">{monitor.subject}</p>
                     </div>
                   </a>
@@ -241,7 +312,6 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-
         <div className="relative h-16 flex items-center px-5 gap-3 overflow-hidden flex-shrink-0">
           <img src="/FondoChats.png" alt="fondo" className="absolute inset-0 w-full h-full object-cover" />
           <div className="relative z-10 flex items-center gap-3 flex-1">

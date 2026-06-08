@@ -27,6 +27,7 @@ export default function Navbar() {
   const [loadingNotif, setLoadingNotif] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
 
   const getToken = () =>
@@ -61,6 +62,48 @@ export default function Navbar() {
     }
   }, []);
 
+  const fetchUnreadMessages = useCallback(async (userId: number) => {
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/message`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+
+      const allMessages = await res.json();
+
+      // Solo mensajes recibidos por mí
+      const received = allMessages.filter((m: any) => m.receiver?.id === userId);
+
+      // Leer últimos IDs leídos del localStorage
+      const seenRaw = localStorage.getItem(`chat_seen_${userId}`);
+      const seen: Record<number, number> = seenRaw ? JSON.parse(seenRaw) : {};
+
+      // Agrupar por conversación y contar no leídos
+      let total = 0;
+      const bySender = new Map<number, number[]>();
+      for (const msg of received) {
+        const sid = msg.sender?.id;
+        if (!sid) continue;
+        if (!bySender.has(sid)) bySender.set(sid, []);
+        bySender.get(sid)!.push(msg.id);
+      }
+
+      for (const [senderId, ids] of bySender.entries()) {
+        const lastSeen = seen[senderId] ?? 0;
+        const newCount = ids.filter(id => id > lastSeen).length;
+        total += newCount;
+      }
+
+      setUnreadMessages(total);
+    } catch {
+      // silencioso
+    }
+  }, []);
+
   const fetchUnreadCount = useCallback(async (userId: number) => {
     try {
       const token = getToken();
@@ -84,9 +127,43 @@ export default function Navbar() {
   useEffect(() => {
     if (!myId || isAdmin) return;
     fetchUnreadCount(myId);
-    const interval = setInterval(() => fetchUnreadCount(myId), 5_000);
+    fetchUnreadMessages(myId);
+    const interval = setInterval(() => {
+      fetchUnreadCount(myId);
+      fetchUnreadMessages(myId);
+    }, 30_000);
     return () => clearInterval(interval);
-  }, [myId, isAdmin, fetchUnreadCount]);
+  }, [myId, isAdmin, fetchUnreadCount, fetchUnreadMessages]);
+
+  // ✅ Cuando el usuario entra a un chat, marca como leído
+  useEffect(() => {
+    if (!myId) return;
+    const match = pathname.match(/^\/chat\/(\d+)$/);
+    if (!match) return;
+    const otherId = Number(match[1]);
+
+    // Buscar el último mensaje de esa conversación y marcarlo como visto
+    const token = getToken();
+    if (!token) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/message`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    })
+      .then(r => r.json())
+      .then((msgs: any[]) => {
+        const fromOther = msgs.filter(
+          m => m.sender?.id === otherId && m.receiver?.id === myId
+        );
+        if (fromOther.length === 0) return;
+        const lastId = Math.max(...fromOther.map(m => m.id));
+        const seenRaw = localStorage.getItem(`chat_seen_${myId}`);
+        const seen: Record<number, number> = seenRaw ? JSON.parse(seenRaw) : {};
+        seen[otherId] = lastId;
+        localStorage.setItem(`chat_seen_${myId}`, JSON.stringify(seen));
+        fetchUnreadMessages(myId);
+      })
+      .catch(() => {});
+  }, [pathname, myId]);
 
   const loadNotifications = async () => {
     setLoadingNotif(true);
@@ -204,7 +281,7 @@ export default function Navbar() {
     <nav className="w-full h-20 bg-white shadow-sm flex items-center justify-between px-10 relative z-40">
       <div className="flex items-center gap-4">
 
-        {/* ✅ Menú hamburguesa con dropdown */}
+        {/* Menú hamburguesa */}
         <div className="relative">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -217,32 +294,25 @@ export default function Navbar() {
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
               <div className="absolute left-0 top-12 bg-white rounded-2xl shadow-xl border border-gray-100 w-52 z-50 py-2 overflow-hidden">
+                {/* ✅ Solo Chats con ícono comment.svg y badge */}
                 {!isAdmin && (
-                  <Link href="/chat-home" onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
-                    💬 Mis chats
+                  <Link
+                    href="/chat-home"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium"
+                  >
+                    <div className="flex items-center gap-2">
+                      <img src="/comment.svg" alt="Chats" className="w-5 h-5" />
+                      Mis chats
+                    </div>
+                    {/* ✅ Badge de mensajes no leídos */}
+                    {unreadMessages > 0 && (
+                      <span className="min-w-[20px] h-5 bg-[#5856D6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                        {unreadMessages > 9 ? '9+' : unreadMessages}
+                      </span>
+                    )}
                   </Link>
                 )}
-                {!isAdmin && (
-                  <Link href="/profile" onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
-                    👤 Mi perfil
-                  </Link>
-                )}
-                <Link href="/feed" onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
-                  🏠 Feed
-                </Link>
-                {!isAdmin && (
-                  <Link href="/questions" onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
-                    ❓ Preguntas
-                  </Link>
-                )}
-                <Link href="/monitors" onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
-                  📡 Monitores
-                </Link>
               </div>
             </>
           )}
@@ -257,13 +327,10 @@ export default function Navbar() {
         {links.map(({ label, href }) => {
           const isActive = pathname === href;
           return (
-            <Link
-              key={href}
-              href={href}
-              className={`transition ${
-                isActive
-                  ? "text-[#5856D6] border-b-2 border-[#5856D6] pb-1"
-                  : "text-gray-400 hover:text-[#5856D6]"}`}
+            <Link key={href} href={href}
+              className={`transition ${isActive
+                ? "text-[#5856D6] border-b-2 border-[#5856D6] pb-1"
+                : "text-gray-400 hover:text-[#5856D6]"}`}
             >
               {label}
             </Link>
@@ -274,12 +341,9 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {!isAdmin && (
           <button
-            onClick={() => {
-              setIsModalOpen(true);
-              setHasChecked(false);
-              loadNotifications();
-            }}
-            className="p-2 rounded-full hover:bg-gray-100 transition relative" aria-label="Notificaciones">
+            onClick={() => { setIsModalOpen(true); setHasChecked(false); }}
+            className="p-2 rounded-full hover:bg-gray-100 transition relative" aria-label="Notificaciones"
+          >
             <span className="text-2xl">🔔</span>
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
@@ -304,17 +368,10 @@ export default function Navbar() {
           <div className="bg-white rounded-3xl p-6 w-[420px] shadow-2xl border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-xl text-gray-800">Notificaciones</h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 text-lg hover:text-gray-600 transition"
-              >
-                ✕
-              </button>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 text-lg hover:text-gray-600 transition">✕</button>
             </div>
 
-            <button
-              onClick={loadNotifications}
-              disabled={loadingNotif}
+            <button onClick={loadNotifications} disabled={loadingNotif}
               className="w-full bg-[#5856D6] disabled:bg-indigo-300 text-white text-xs font-semibold py-2 rounded-xl mb-4 hover:bg-[#4745b4] transition"
             >
               {loadingNotif ? "Verificando..." : "Verificar notificaciones"}
@@ -324,22 +381,16 @@ export default function Navbar() {
               {loadingNotif ? (
                 <p className="text-xs text-center text-gray-400 py-6">Buscando notificaciones...</p>
               ) : !hasChecked ? (
-                <p className="text-xs text-center text-gray-400 py-6">
-                  Presiona el botón para sincronizar tus alertas.
-                </p>
+                <p className="text-xs text-center text-gray-400 py-6">Presiona el botón para sincronizar tus alertas.</p>
               ) : notifications.length === 0 ? (
                 <p className="text-xs text-center text-gray-400 py-6">No tienes notificaciones pendientes.</p>
               ) : (
                 notifications.map((notif) => {
                   const isProcessing = processingIds.has(notif.id);
                   const isFriendRequest = notif.message.toLowerCase().includes("solicitud de amistad");
-
                   return (
-                    <div
-                      key={notif.id}
-                      className={`bg-gray-50 border border-gray-100 p-3 rounded-xl flex flex-col gap-2 transition ${
-                        isProcessing ? "opacity-50 pointer-events-none" : ""
-                      }`}
+                    <div key={notif.id}
+                      className={`bg-gray-50 border border-gray-100 p-3 rounded-xl flex flex-col gap-2 transition ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
                     >
                       <div className="flex gap-2 items-center">
                         <img
@@ -348,30 +399,19 @@ export default function Navbar() {
                           alt={notif.sender?.name ?? "Usuario"}
                         />
                         <div className="flex-1 min-w-0">
-                          {notif.sender?.name && (
-                            <p className="text-xs font-bold text-gray-800 truncate">{notif.sender.name}</p>
-                          )}
+                          {notif.sender?.name && <p className="text-xs font-bold text-gray-800 truncate">{notif.sender.name}</p>}
                           <p className="text-xs text-gray-600">{notif.message}</p>
                         </div>
-                        {!notif.read && (
-                          <span className="w-2 h-2 bg-[#5856D6] rounded-full flex-shrink-0" />
-                        )}
+                        {!notif.read && <span className="w-2 h-2 bg-[#5856D6] rounded-full flex-shrink-0" />}
                       </div>
-
                       {isFriendRequest && (
                         <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => handleRequestAction(notif, 'rejected')}
-                            disabled={isProcessing}
-                            className="bg-gray-200 text-gray-700 text-[11px] px-3 py-1.5 rounded-lg font-bold hover:bg-gray-300 transition"
-                          >
+                          <button onClick={() => handleRequestAction(notif, 'rejected')} disabled={isProcessing}
+                            className="bg-gray-200 text-gray-700 text-[11px] px-3 py-1.5 rounded-lg font-bold hover:bg-gray-300 transition">
                             Rechazar
                           </button>
-                          <button
-                            onClick={() => handleRequestAction(notif, 'accepted')}
-                            disabled={isProcessing}
-                            className="bg-[#5856D6] text-white text-[11px] px-3 py-1.5 rounded-lg font-bold hover:bg-[#4745b4] transition"
-                          >
+                          <button onClick={() => handleRequestAction(notif, 'accepted')} disabled={isProcessing}
+                            className="bg-[#5856D6] text-white text-[11px] px-3 py-1.5 rounded-lg font-bold hover:bg-[#4745b4] transition">
                             Aceptar
                           </button>
                         </div>
