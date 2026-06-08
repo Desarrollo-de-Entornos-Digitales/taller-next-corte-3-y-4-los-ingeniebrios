@@ -69,8 +69,11 @@ export default function ProfileHeader({ user, posts, isOwnProfile = false }: Pro
       }
 
       if (!isOwnProfile) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const loggedUserId = payload.sub ?? payload.id;
+
         const resCheck = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/friends/check/${user.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/friends/request/${loggedUserId}/${user.id}`,
           { headers: { Authorization: `Bearer ${token}` } },
         );
         if (resCheck.ok) {
