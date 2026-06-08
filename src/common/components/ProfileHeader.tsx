@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import ProfilePostCard from "./ProfilePostCard";
+import ProfilePostCard from "./ProfilePostCard";``
 import { Post } from "../services/profile.service";
+
 
 interface ProfileHeaderProps {
   user: {
