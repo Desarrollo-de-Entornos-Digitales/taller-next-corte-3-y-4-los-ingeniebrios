@@ -4,13 +4,15 @@ import { useState } from "react";
 import { MessageResponse, FriendUser } from "../chat/actions/chat.action";
 
 type User = { id: number; name: string; avatar: string | null };
-type Tab = "chats" | "amigos" | "monitores";
+type Tab = "chats" | "amigos" | "estudiantes" | "monitores";
 
 type Props = {
   me: User;
   allMessages: MessageResponse[];
   friends: FriendUser[];
   monitors: any[];
+  students: any[];
+  isMonitor: boolean;
 };
 
 function getAvatar(avatar: string | null | undefined, name: string) {
@@ -40,18 +42,34 @@ function buildConversations(allMessages: MessageResponse[], myId: number) {
   );
 }
 
-export default function ChatHomeClient({ me, allMessages, friends, monitors }: Props) {
+export default function ChatHomeClient({ me, allMessages, friends, monitors, students, isMonitor }: Props) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<Tab>("chats");
   const conversations = buildConversations(allMessages, me.id);
 
-  const filteredConvos = conversations.filter(c => c.user.name.toLowerCase().includes(search.toLowerCase()));
-  const filteredFriends = friends.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
-  const filteredMonitors = monitors.filter(m => (m.student?.user?.name ?? "").toLowerCase().includes(search.toLowerCase()));
+  const tabs: Tab[] = isMonitor
+    ? ["chats", "amigos", "estudiantes", "monitores"]
+    : ["chats", "amigos", "monitores"];
+
+  const filteredConvos = conversations.filter(c =>
+    c.user.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredFriends = friends.filter(f =>
+    f.name.toLowerCase().includes(search.toLowerCase())
+  );
+ 
+  const filteredMonitors = monitors.filter(m =>
+    m.student?.user?.id !== me.id &&
+    (m.student?.user?.name ?? "").toLowerCase().includes(search.toLowerCase())
+  );
+ 
+  const filteredStudents = students.filter(s =>
+    s.user?.id !== me.id &&
+    (s.user?.name ?? "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Sidebar */}
       <div className="w-80 border-r border-gray-100 bg-white flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-gray-100">
           <div className="relative">
@@ -66,7 +84,7 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors }: P
         </div>
 
         <div className="flex border-b border-gray-100">
-          {(["chats", "amigos", "monitores"] as Tab[]).map((t) => (
+          {tabs.map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-xs font-semibold capitalize transition ${tab === t ? "text-[#5856D6] border-b-2 border-[#5856D6]" : "text-gray-400 hover:text-gray-600"}`}
             >
@@ -112,6 +130,29 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors }: P
             </>
           )}
 
+          {tab === "estudiantes" && (
+            <>
+              {filteredStudents.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">No hay estudiantes disponibles.</p>}
+              {filteredStudents.map((student) => {
+                const name = student.user?.name ?? "Estudiante";
+                const avatar = student.user?.avatar ?? null;
+                const userId = student.user?.id;
+                if (!userId) return null;
+                return (
+                  <a key={student.id} href={`/chat/${userId}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
+                  >
+                    <img src={getAvatar(avatar, name)} alt={name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+                      <p className="text-xs text-gray-400 truncate">{student.career?.name ?? ""}</p>
+                    </div>
+                  </a>
+                );
+              })}
+            </>
+          )}
+
           {tab === "monitores" && (
             <>
               {filteredMonitors.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">No hay monitores disponibles.</p>}
@@ -137,7 +178,6 @@ export default function ChatHomeClient({ me, allMessages, friends, monitors }: P
         </div>
       </div>
 
-      {/* Panel derecho vacío */}
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-4xl mb-4">💬</p>
