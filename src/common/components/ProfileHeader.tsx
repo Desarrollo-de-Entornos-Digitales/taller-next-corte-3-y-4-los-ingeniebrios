@@ -305,7 +305,6 @@ export default function ProfileHeader({ user, posts, isOwnProfile = false }: Pro
             <div className="bg-white rounded-[28px] p-5 shadow-sm border border-gray-100">
               <h3 className="text-sm font-bold text-gray-800 mb-3 flex justify-between items-center">
                 <span>Lista de amigos</span>
-                <span className="text-xs bg-gray-100 text-[#5856D6] px-2 py-0.5 rounded-full">{friendsList.length}</span>
               </h3>
               {friendsList.length === 0 ? (
                 <p className="text-xs text-gray-400 text-center py-4">No hay amigos agregados aún.</p>

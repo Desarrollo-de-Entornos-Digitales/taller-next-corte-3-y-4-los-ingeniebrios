@@ -112,72 +112,76 @@ export default function Navbar() {
   };
 
   const handleRequestAction = async (
-    notif: AppNotification,
-    action: 'accepted' | 'rejected',
-  ) => {
-    const senderId = notif.sender?.id;
-    if (!senderId) {
-      alert("No se pudo identificar al remitente.");
-      return;
-    }
+  notif: AppNotification,
+  action: 'accepted' | 'rejected',
+) => {
+  const senderId = notif.sender?.id;
+  if (!senderId || !myId) {
+    alert("No se pudo identificar al remitente.");
+    return;
+  }
 
-    setProcessingIds(prev => new Set(prev).add(notif.id));
+  setProcessingIds(prev => new Set(prev).add(notif.id));
 
-    try {
-      const token = getToken();
-      if (!token) return;
+  try {
+    const token = getToken();
+    if (!token) return;
 
-      const checkRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/friends/check/${senderId}`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+    const checkRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/friends/request/${senderId}/${myId}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
 
-      if (!checkRes.ok) throw new Error("No se pudo verificar la solicitud.");
-      const checkData = await checkRes.json();
+    if (!checkRes.ok) throw new Error("No se pudo verificar la solicitud.");
+    const checkData = await checkRes.json();
 
-      if (!checkData.requestId) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notif.id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setNotifications(prev => prev.filter(n => n.id !== notif.id));
-        setUnreadCount(prev => Math.max(0, prev - 1));
-        return;
-      }
+  console.log("checkData:", checkData);
+  console.log("requestId:", checkData.requestId);
 
-      if (action === 'accepted') {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/friends/${checkData.requestId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ status: 'accepted' }),
-        });
-      } else {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/friends/${checkData.requestId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
-
+    if (!checkData.requestId) {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notif.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setNotifications(prev => prev.filter(n => n.id !== notif.id));
       setUnreadCount(prev => Math.max(0, prev - 1));
-      window.dispatchEvent(new Event("friendshipChanged"));
+      return;
+    }
 
-    } catch (err) {
-      console.error("Error procesando acción:", err);
-      alert("Ocurrió un error. Intenta de nuevo.");
-    } finally {
-      setProcessingIds(prev => {
-        const next = new Set(prev);
-        next.delete(notif.id);
-        return next;
+    if (action === 'accepted') {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/friends/${checkData.requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'accepted' }),
+      });
+    } else {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/friends/${checkData.requestId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
       });
     }
-  };
+
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notif.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setNotifications(prev => prev.filter(n => n.id !== notif.id));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+    window.dispatchEvent(new Event("friendshipChanged"));
+
+  } catch (err) {
+  console.error("Error procesando acción:", err);
+  console.log("senderId:", senderId, "myId:", myId);
+  alert("Ocurrió un error. Intenta de nuevo.");
+} finally {
+    setProcessingIds(prev => {
+      const next = new Set(prev);
+      next.delete(notif.id);
+      return next;
+    });
+  }
+};
 
   const links = [
     ...(!isAdmin ? [{ label: "Pregunta", href: "/questions" }] : []),
