@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { getConversationAction, sendMessageAction, MessageResponse } from "../actions/chat.action";
+import { useRef, useState, useTransition } from "react";
+import {
+  getConversationAction,
+  sendMessageAction,
+  MessageResponse,
+  FriendUser,
+} from "../actions/chat.action";
 
 type User = {
   id: number;
@@ -16,6 +21,8 @@ type Props = {
   allMessages: MessageResponse[];
   friends: FriendUser[];
   monitors: any[];
+  students: any[];
+  isMonitor: boolean;
 };
 
 function getAvatar(avatar: string | null | undefined, name: string) {
@@ -26,32 +33,22 @@ function getAvatar(avatar: string | null | undefined, name: string) {
 function formatTime(dateStr: string) {
   try {
     return new Intl.DateTimeFormat("es-CO", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
+      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
       timeZone: "America/Bogota",
     }).format(new Date(dateStr));
-  } catch {
-    return dateStr;
-  }
+  } catch { return dateStr; }
 }
 
 function formatTimeShort(dateStr: string) {
   try {
     return new Intl.DateTimeFormat("es-CO", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "America/Bogota",
+      hour: "2-digit", minute: "2-digit", timeZone: "America/Bogota",
     }).format(new Date(dateStr));
-  } catch {
-    return dateStr;
-  }
+  } catch { return dateStr; }
 }
 
 function buildConversations(allMessages: MessageResponse[], myId: number) {
   const map = new Map<number, { user: User; lastMessage: MessageResponse }>();
-
   for (const msg of allMessages) {
     const other = msg.sender.id === myId ? msg.receiver : msg.sender;
     const existing = map.get(other.id);
@@ -59,15 +56,14 @@ function buildConversations(allMessages: MessageResponse[], myId: number) {
       map.set(other.id, { user: other, lastMessage: msg });
     }
   }
-
   return Array.from(map.values()).sort(
     (a, b) => new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()
   );
 }
 
-type Tab = "chats" | "amigos" | "monitores";
+type Tab = "chats" | "amigos" | "estudiantes" | "monitores";
 
-export default function ChatClient({ me, receiver, initialMessages, allMessages, friends, monitors }: Props) {
+export default function ChatClient({ me, receiver, initialMessages, allMessages, friends, monitors, students, isMonitor }: Props) {
   const [messages, setMessages] = useState<MessageResponse[]>(initialMessages);
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
@@ -78,11 +74,14 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
   const bottomRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
 
+  const tabs: Tab[] = isMonitor
+    ? ["chats", "amigos", "estudiantes", "monitores"]
+    : ["chats", "amigos", "monitores"];
+
   const scrollToBottom = () => {
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
-  // ✅ Recargar mensajes manualmente
   const handleReload = async () => {
     setReloading(true);
     const result = await getConversationAction(me.id, receiver.id);
@@ -113,7 +112,6 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  // Sidebar según tab activo
   const filteredConvos = conversations.filter((c) =>
     c.user.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -121,22 +119,21 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
     f.name.toLowerCase().includes(search.toLowerCase())
   );
   const filteredMonitors = monitors.filter((m) =>
+    m.student?.user?.id !== me.id &&
     (m.student?.user?.name ?? "").toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredStudents = students.filter((s) =>
+    s.user?.id !== me.id &&
+    (s.user?.name ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="flex h-full overflow-hidden">
 
-      {/* ── Sidebar izquierdo ── */}
       <div className="w-80 border-r border-gray-100 bg-white flex flex-col flex-shrink-0">
-
-        {/* Search */}
         <div className="p-4 border-b border-gray-100">
           <div className="relative">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar..."
               className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#5856D6]/30"
             />
@@ -146,16 +143,11 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-gray-100">
-          {(["chats", "amigos", "monitores"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
+          {tabs.map((t) => (
+            <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-xs font-semibold capitalize transition ${
-                tab === t
-                  ? "text-[#5856D6] border-b-2 border-[#5856D6]"
-                  : "text-gray-400 hover:text-gray-600"
+                tab === t ? "text-[#5856D6] border-b-2 border-[#5856D6]" : "text-gray-400 hover:text-gray-600"
               }`}
             >
               {t}
@@ -163,15 +155,10 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
           ))}
         </div>
 
-        {/* Lista */}
         <div className="flex-1 overflow-y-auto">
-
-          {/* Tab: Chats recientes */}
           {tab === "chats" && (
             <>
-              {filteredConvos.length === 0 && (
-                <p className="text-center text-gray-400 text-sm mt-8 px-4">Aún no tienes conversaciones.</p>
-              )}
+              {filteredConvos.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">Aún no tienes conversaciones.</p>}
               {filteredConvos.map((convo) => (
                 <a key={convo.user.id} href={`/chat/${convo.user.id}`}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${convo.user.id === receiver.id ? "bg-[#EBEBFF]" : ""}`}
@@ -191,12 +178,9 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
             </>
           )}
 
-          {/* Tab: Amigos */}
           {tab === "amigos" && (
             <>
-              {filteredFriends.length === 0 && (
-                <p className="text-center text-gray-400 text-sm mt-8 px-4">No tienes amigos agregados aún.</p>
-              )}
+              {filteredFriends.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">No tienes amigos agregados aún.</p>}
               {filteredFriends.map((friend) => (
                 <a key={friend.id} href={`/chat/${friend.id}`}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${friend.id === receiver.id ? "bg-[#EBEBFF]" : ""}`}
@@ -208,12 +192,32 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
             </>
           )}
 
-          {/* Tab: Monitores */}
+          {tab === "estudiantes" && (
+            <>
+              {filteredStudents.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">No hay estudiantes disponibles.</p>}
+              {filteredStudents.map((student) => {
+                const name = student.user?.name ?? "Estudiante";
+                const avatar = student.user?.avatar ?? null;
+                const userId = student.user?.id;
+                if (!userId) return null;
+                return (
+                  <a key={student.id} href={`/chat/${userId}`}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${userId === receiver.id ? "bg-[#EBEBFF]" : ""}`}
+                  >
+                    <img src={getAvatar(avatar, name)} alt={name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+                      <p className="text-xs text-gray-400 truncate">{student.career?.name ?? ""}</p>
+                    </div>
+                  </a>
+                );
+              })}
+            </>
+          )}
+
           {tab === "monitores" && (
             <>
-              {filteredMonitors.length === 0 && (
-                <p className="text-center text-gray-400 text-sm mt-8 px-4">No hay monitores disponibles.</p>
-              )}
+              {filteredMonitors.length === 0 && <p className="text-center text-gray-400 text-sm mt-8 px-4">No hay monitores disponibles.</p>}
               {filteredMonitors.map((monitor) => {
                 const name = monitor.student?.user?.name ?? "Monitor";
                 const avatar = monitor.student?.user?.avatar ?? null;
@@ -236,22 +240,16 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
         </div>
       </div>
 
-      {/* ── Chat activo ── */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* Banner */}
         <div className="relative h-16 flex items-center px-5 gap-3 overflow-hidden flex-shrink-0">
           <img src="/FondoChats.png" alt="fondo" className="absolute inset-0 w-full h-full object-cover" />
           <div className="relative z-10 flex items-center gap-3 flex-1">
             <img src={getAvatar(receiver.avatar, receiver.name)} alt={receiver.name} className="w-10 h-10 rounded-full object-cover border-2 border-white/60" />
             <div className="flex-1">
               <p className="font-bold text-white text-sm">{receiver.name}</p>
-              <p className="text-xs text-white/70">Monitor</p>
             </div>
-            {/* ✅ Botón Recargar */}
-            <button
-              onClick={handleReload}
-              disabled={reloading}
+            <button onClick={handleReload} disabled={reloading}
               className="relative z-10 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition flex items-center gap-1.5 disabled:opacity-50"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className={`h-3.5 w-3.5 ${reloading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -262,7 +260,6 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
           </div>
         </div>
 
-        {/* Mensajes */}
         <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3 bg-gray-50">
           {messages.length === 0 && (
             <p className="text-center text-gray-400 text-sm mt-10">Aún no hay mensajes. ¡Empieza la conversación!</p>
@@ -283,19 +280,12 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
         <div className="px-6 py-4 bg-white border-t border-gray-100 flex items-center gap-3 flex-shrink-0">
-          <input
-            type="text"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Escribe un mensaje..."
+          <input type="text" value={content} onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown} placeholder="Escribe un mensaje..."
             className="flex-1 border border-gray-200 rounded-full px-5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#5856D6]/30 transition"
           />
-          <button
-            onClick={handleSend}
-            disabled={sending || !content.trim()}
+          <button onClick={handleSend} disabled={sending || !content.trim()}
             className="bg-[#5856D6] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-[#4745c0] transition-colors disabled:opacity-50"
           >
             {sending ? "..." : "Enviar"}

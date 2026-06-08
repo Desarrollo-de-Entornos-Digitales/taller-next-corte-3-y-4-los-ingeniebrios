@@ -58,3 +58,7 @@ export async function getFriendsAction(userId: number): Promise<ApiResult<Friend
 export async function getMonitorsAction(): Promise<ApiResult<any[]>> {
   return safeRequest(axiosClient.get<any[]>("/monitors"));
 }
+
+export async function getStudentsAction(): Promise<ApiResult<any[]>> {
+  return safeRequest(axiosClient.get<any[]>("/students"));
+}

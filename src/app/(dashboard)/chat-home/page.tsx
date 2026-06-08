@@ -1,4 +1,4 @@
-import { getCurrentUserAction, getAllMessagesAction, getFriendsAction, getMonitorsAction } from "../chat/actions/chat.action";
+import { getCurrentUserAction, getAllMessagesAction, getFriendsAction, getMonitorsAction, getStudentsAction } from "../chat/actions/chat.action";
 import ChatHomeClient from "./ChatHomeClient";
 
 export default async function ChatHomePage() {
@@ -13,10 +13,11 @@ export default async function ChatHomePage() {
 
   const me = meResult.data;
 
-  const [allMessagesResult, friendsResult, monitorsResult] = await Promise.all([
+  const [allMessagesResult, friendsResult, monitorsResult, studentsResult] = await Promise.all([
     getAllMessagesAction(),
     getFriendsAction(me.id),
     getMonitorsAction(),
+    getStudentsAction(),
   ]);
 
   const allMessages = allMessagesResult.error ? [] : allMessagesResult.data;
@@ -25,6 +26,9 @@ export default async function ChatHomePage() {
   );
   const friends = friendsResult.error ? [] : friendsResult.data;
   const monitors = monitorsResult.error ? [] : monitorsResult.data;
+  const students = studentsResult.error ? [] : studentsResult.data;
+
+  const isMonitor = monitors.some((m: any) => m.student?.user?.id === me.id);
 
   return (
     <ChatHomeClient
@@ -32,6 +36,8 @@ export default async function ChatHomePage() {
       allMessages={myMessages}
       friends={friends}
       monitors={monitors}
+      students={students}
+      isMonitor={isMonitor}
     />
   );
 }
