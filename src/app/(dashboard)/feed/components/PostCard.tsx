@@ -38,18 +38,29 @@ const REPORT_REASONS = [
 ];
 
 const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
-  const [isAdmin, setIsAdmin] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [reported, setReported] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [reporting, setReporting] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [reportError, setReportError] = useState("");
 
-  useEffect(() => {
-    setIsAdmin(checkIsAdmin());
-  }, []);
+
+  const token = getToken();
+  let isAdmin = false;
+  let isOwner = false;
+
+
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      isAdmin = Array.isArray(payload.permissions) && payload.permissions.includes("manage_users");
+      isOwner = Number(payload.sub) === post.user.id;
+    } catch {}
+  }
+
 
   const handleDelete = async () => {
     if (!confirm("¿Estás seguro de que quieres eliminar este post?")) return;
@@ -150,9 +161,115 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
               onClick={handleDelete}
               disabled={deleting}
               className="ml-auto flex items-center gap-1 bg-red-50 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-50"
-            >
-              {deleting ? "Eliminando..." : "🗑 Eliminar"}
+              >
+              {deleting ? (
+                "Eliminando..."
+                ) : (
+                <>
+                <img
+                  src="/delete1.svg"
+                  alt="Eliminar"
+                  className="w-4 h-4"
+                />
+                  Eliminar
+                </>
+                )}
             </button>
+          )}
+
+          {!isAdmin && (
+            <div className="relative ml-auto">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="text-gray-400 hover:text-gray-600 text-xl px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+              ⋯
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-xl shadow-lg z-10 min-w-[130px] overflow-hidden">
+                {isOwner ? (
+                <>
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <img
+                  src="/edit.svg"
+                  alt="Editar"
+                  className="w-4 h-4"
+                  />
+                  Editar
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!confirm("¿Eliminar tu post?")) return;
+                    setMenuOpen(false);
+                    setDeleting(true);
+
+                    try {
+                      const token = getToken();
+
+                     const res = await fetch(
+                      `${process.env.NEXT_PUBLIC_API_URL}/posts/own/${post.id}`,
+                        {
+                          method: "DELETE",
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        }
+                      );
+
+                      if (res.ok) onDeleted?.(post.id);
+                      else alert("No se pudo eliminar el post.");
+                    } catch {
+                      alert("Error al eliminar.");
+                    } finally {
+                      setDeleting(false);
+                    }
+                  }}
+                  disabled={deleting}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                >
+                  {deleting ? (
+                    "Eliminando..."
+                  ) : (
+                  <>
+                  <img
+                    src="/delete1.svg"
+                    alt="Eliminar"
+                    className="w-4 h-4"
+                  />
+                    Eliminar
+                  </>
+                  )}
+                  </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      !reported && setShowReportModal(true);
+                    }}
+                    disabled={reported}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-yellow-600 hover:bg-yellow-50 transition-colors disabled:opacity-50"
+                  >
+                    {reported ? (
+                      "✓ Reportado"
+                    ) : (
+                    <>
+                    <img
+                      src="/REPORT.svg"
+                      alt="Reportar"
+                      className="w-4 h-4"
+                    />
+                      Reportar
+                    </>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+            </div>
           )}
         </div>
 
@@ -173,19 +290,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
           </span>
 
           <div className="flex items-center gap-2">
-            {!isAdmin && (
-              <button
-                onClick={() => !reported && setShowReportModal(true)}
-                disabled={reported}
-                className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl transition-colors ${reported
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-red-50 text-red-400 hover:bg-red-100"
-                  }`}
-              >
-                {reported ? "✓ Reportado" : "⚑ Reportar"}
-              </button>
-            )}
-
             <Link
               href={`/comments/${post.id}`}
               className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
