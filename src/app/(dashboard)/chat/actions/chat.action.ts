@@ -6,6 +6,7 @@ export type CurrentUser = {
   id: number;
   name: string;
   avatar: string | null;
+  student?: { level: number };
 };
 
 export type MessageResponse = {
@@ -14,6 +15,13 @@ export type MessageResponse = {
   createdAt: string;
   sender: { id: number; name: string; avatar: string | null };
   receiver: { id: number; name: string; avatar: string | null };
+};
+
+export type FriendUser = {
+  id: number;
+  name: string;
+  avatar: string | null;
+  student?: { level: number };
 };
 
 export async function getCurrentUserAction(): Promise<ApiResult<CurrentUser>> {
@@ -41,4 +49,12 @@ export async function sendMessageAction(
   return safeRequest(
     axiosClient.post<MessageResponse>("/message", { content, senderId, receiverId })
   );
+}
+
+export async function getFriendsAction(userId: number): Promise<ApiResult<FriendUser[]>> {
+  return safeRequest(axiosClient.get<FriendUser[]>(`/friends/user/${userId}`));
+}
+
+export async function getMonitorsAction(): Promise<ApiResult<any[]>> {
+  return safeRequest(axiosClient.get<any[]>("/monitors"));
 }
