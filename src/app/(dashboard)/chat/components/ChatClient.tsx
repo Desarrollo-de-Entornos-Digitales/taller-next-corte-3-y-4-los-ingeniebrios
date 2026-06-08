@@ -14,6 +14,8 @@ type Props = {
   receiver: User;
   initialMessages: MessageResponse[];
   allMessages: MessageResponse[];
+  friends: FriendUser[];
+  monitors: any[];
 };
 
 function getAvatar(avatar: string | null | undefined, name: string) {
@@ -63,30 +65,33 @@ function buildConversations(allMessages: MessageResponse[], myId: number) {
   );
 }
 
-export default function ChatClient({ me, receiver, initialMessages, allMessages }: Props) {
+type Tab = "chats" | "amigos" | "monitores";
+
+export default function ChatClient({ me, receiver, initialMessages, allMessages, friends, monitors }: Props) {
   const [messages, setMessages] = useState<MessageResponse[]>(initialMessages);
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
+  const [reloading, setReloading] = useState(false);
   const [conversations, setConversations] = useState(() => buildConversations(allMessages, me.id));
   const [search, setSearch] = useState("");
+  const [tab, setTab] = useState<Tab>("chats");
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
-  // Scroll al último mensaje
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const scrollToBottom = () => {
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  };
 
-  // Polling cada 3 segundos para nuevos mensajes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      startTransition(async () => {
-        const result = await getConversationAction(me.id, receiver.id);
-        if (!result.error) setMessages(result.data);
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [me.id, receiver.id]);
+  // ✅ Recargar mensajes manualmente
+  const handleReload = async () => {
+    setReloading(true);
+    const result = await getConversationAction(me.id, receiver.id);
+    if (!result.error) {
+      setMessages(result.data);
+      scrollToBottom();
+    }
+    setReloading(false);
+  };
 
   const handleSend = async () => {
     if (!content.trim()) return;
@@ -94,31 +99,38 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages 
     const result = await sendMessageAction(content.trim(), me.id, receiver.id);
     if (!result.error) {
       setMessages((prev) => [...prev, result.data]);
-      // Actualizar sidebar con el nuevo mensaje
       setConversations((prev) => {
         const updated = prev.filter((c) => c.user.id !== receiver.id);
         return [{ user: receiver, lastMessage: result.data }, ...updated];
       });
       setContent("");
+      scrollToBottom();
     }
     setSending(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
+  // Sidebar según tab activo
   const filteredConvos = conversations.filter((c) =>
     c.user.name.toLowerCase().includes(search.toLowerCase())
   );
+  const filteredFriends = friends.filter((f) =>
+    f.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredMonitors = monitors.filter((m) =>
+    (m.student?.user?.name ?? "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="flex overflow-hidden" style={{ height: 'calc(100svh - 64px)' }}>
+    <div className="flex h-full overflow-hidden">
 
-      <div className="w-80 border-r border-gray-100 bg-white flex flex-col">
+      {/* ── Sidebar izquierdo ── */}
+      <div className="w-80 border-r border-gray-100 bg-white flex flex-col flex-shrink-0">
+
+        {/* Search */}
         <div className="p-4 border-b border-gray-100">
           <div className="relative">
             <input
@@ -128,90 +140,138 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages 
               placeholder="Buscar..."
               className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#5856D6]/30"
             />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {filteredConvos.length === 0 && (
-            <p className="text-center text-gray-400 text-sm mt-8 px-4">
-              Aún no tienes conversaciones.
-            </p>
-          )}
-          {filteredConvos.map((convo) => (
-            <a
-              key={convo.user.id}
-              href={`/chat/${convo.user.id}`}
-              className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${
-                convo.user.id === receiver.id ? "bg-[#EBEBFF]" : ""
+        {/* Tabs */}
+        <div className="flex border-b border-gray-100">
+          {(["chats", "amigos", "monitores"] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 py-2.5 text-xs font-semibold capitalize transition ${
+                tab === t
+                  ? "text-[#5856D6] border-b-2 border-[#5856D6]"
+                  : "text-gray-400 hover:text-gray-600"
               }`}
             >
-              <img
-                src={getAvatar(convo.user.avatar, convo.user.name)}
-                alt={convo.user.name}
-                className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <p className="font-semibold text-gray-800 text-sm truncate">
-                    {convo.user.name}
-                  </p>
-                  <span className="text-[10px] text-gray-400 flex-shrink-0 ml-1" suppressHydrationWarning>
-                    {formatTimeShort(convo.lastMessage.createdAt)}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-400 truncate">
-                  {convo.lastMessage.content}
-                </p>
-              </div>
-            </a>
+              {t}
+            </button>
           ))}
+        </div>
+
+        {/* Lista */}
+        <div className="flex-1 overflow-y-auto">
+
+          {/* Tab: Chats recientes */}
+          {tab === "chats" && (
+            <>
+              {filteredConvos.length === 0 && (
+                <p className="text-center text-gray-400 text-sm mt-8 px-4">Aún no tienes conversaciones.</p>
+              )}
+              {filteredConvos.map((convo) => (
+                <a key={convo.user.id} href={`/chat/${convo.user.id}`}
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${convo.user.id === receiver.id ? "bg-[#EBEBFF]" : ""}`}
+                >
+                  <img src={getAvatar(convo.user.avatar, convo.user.name)} alt={convo.user.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <p className="font-semibold text-gray-800 text-sm truncate">{convo.user.name}</p>
+                      <span className="text-[10px] text-gray-400 flex-shrink-0 ml-1" suppressHydrationWarning>
+                        {formatTimeShort(convo.lastMessage.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 truncate">{convo.lastMessage.content}</p>
+                  </div>
+                </a>
+              ))}
+            </>
+          )}
+
+          {/* Tab: Amigos */}
+          {tab === "amigos" && (
+            <>
+              {filteredFriends.length === 0 && (
+                <p className="text-center text-gray-400 text-sm mt-8 px-4">No tienes amigos agregados aún.</p>
+              )}
+              {filteredFriends.map((friend) => (
+                <a key={friend.id} href={`/chat/${friend.id}`}
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${friend.id === receiver.id ? "bg-[#EBEBFF]" : ""}`}
+                >
+                  <img src={getAvatar(friend.avatar, friend.name)} alt={friend.name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                  <p className="font-semibold text-gray-800 text-sm truncate">{friend.name}</p>
+                </a>
+              ))}
+            </>
+          )}
+
+          {/* Tab: Monitores */}
+          {tab === "monitores" && (
+            <>
+              {filteredMonitors.length === 0 && (
+                <p className="text-center text-gray-400 text-sm mt-8 px-4">No hay monitores disponibles.</p>
+              )}
+              {filteredMonitors.map((monitor) => {
+                const name = monitor.student?.user?.name ?? "Monitor";
+                const avatar = monitor.student?.user?.avatar ?? null;
+                const userId = monitor.student?.user?.id;
+                if (!userId) return null;
+                return (
+                  <a key={monitor.id} href={`/chat/${userId}`}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${userId === receiver.id ? "bg-[#EBEBFF]" : ""}`}
+                  >
+                    <img src={getAvatar(avatar, name)} alt={name} className="w-11 h-11 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+                      <p className="text-xs text-gray-400 truncate">{monitor.subject}</p>
+                    </div>
+                  </a>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="relative h-16 flex items-center px-5 gap-3 overflow-hidden">
-          <img
-            src="/FondoChats.png"
-            alt="fondo"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="relative z-10 flex items-center gap-3">
-            <img
-              src={getAvatar(receiver.avatar, receiver.name)}
-              alt={receiver.name}
-              className="w-10 h-10 rounded-full object-cover border-2 border-white/60"
-            />
-            <div>
+      {/* ── Chat activo ── */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        {/* Banner */}
+        <div className="relative h-16 flex items-center px-5 gap-3 overflow-hidden flex-shrink-0">
+          <img src="/FondoChats.png" alt="fondo" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="relative z-10 flex items-center gap-3 flex-1">
+            <img src={getAvatar(receiver.avatar, receiver.name)} alt={receiver.name} className="w-10 h-10 rounded-full object-cover border-2 border-white/60" />
+            <div className="flex-1">
               <p className="font-bold text-white text-sm">{receiver.name}</p>
               <p className="text-xs text-white/70">Monitor</p>
             </div>
+            {/* ✅ Botón Recargar */}
+            <button
+              onClick={handleReload}
+              disabled={reloading}
+              className="relative z-10 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-3.5 w-3.5 ${reloading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {reloading ? "Cargando..." : "Recargar"}
+            </button>
           </div>
         </div>
 
+        {/* Mensajes */}
         <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3 bg-gray-50">
           {messages.length === 0 && (
-            <p className="text-center text-gray-400 text-sm mt-10">
-              Aún no hay mensajes. ¡Empieza la conversación!
-            </p>
+            <p className="text-center text-gray-400 text-sm mt-10">Aún no hay mensajes. ¡Empieza la conversación!</p>
           )}
           {messages.map((msg) => {
             const isMine = msg.sender.id === me.id;
             return (
               <div key={msg.id} className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}>
-                <div
-                  className={`max-w-sm px-4 py-2.5 rounded-2xl text-sm ${
-                    isMine
-                      ? "bg-[#5856D6] text-white rounded-br-none"
-                      : "bg-white text-gray-800 border border-gray-100 rounded-bl-none shadow-sm"
-                  }`}
-                >
+                <div className={`max-w-sm px-4 py-2.5 rounded-2xl text-sm ${isMine ? "bg-[#5856D6] text-white rounded-br-none" : "bg-white text-gray-800 border border-gray-100 rounded-bl-none shadow-sm"}`}>
                   {msg.content}
                 </div>
                 <span className="text-[10px] text-gray-400 mt-1 px-1" suppressHydrationWarning>
@@ -223,7 +283,8 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages 
           <div ref={bottomRef} />
         </div>
 
-        <div className="px-6 py-4 bg-white border-t border-gray-100 flex items-center gap-3">
+        {/* Input */}
+        <div className="px-6 py-4 bg-white border-t border-gray-100 flex items-center gap-3 flex-shrink-0">
           <input
             type="text"
             value={content}

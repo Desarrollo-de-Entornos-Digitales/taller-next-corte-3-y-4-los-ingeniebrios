@@ -1,4 +1,4 @@
-import { getCurrentUserAction, getConversationAction, getAllMessagesAction } from "../actions/chat.action";
+import { getCurrentUserAction, getConversationAction, getAllMessagesAction, getFriendsAction, getMonitorsAction } from "../actions/chat.action";
 import ChatClient from "../components/ChatClient";
 import axiosClient, { safeRequest } from "../../../../lib/axios/client";
 
@@ -40,6 +40,14 @@ export default async function ChatPage({ params }: Props) {
     (m: any) => m.sender.id === me.id || m.receiver.id === me.id
   );
 
+  const [friendsResult, monitorsResult] = await Promise.all([
+    getFriendsAction(me.id),
+    getMonitorsAction(),
+  ]);
+
+  const friends = friendsResult.error ? [] : friendsResult.data;
+  const monitors = monitorsResult.error ? [] : monitorsResult.data;
+
   const convoResult = await getConversationAction(me.id, receiverId);
   const initialMessages = convoResult.error ? [] : convoResult.data;
 
@@ -49,6 +57,8 @@ export default async function ChatPage({ params }: Props) {
       receiver={receiver}
       initialMessages={initialMessages}
       allMessages={myMessages}
+      friends={friends}
+      monitors={monitors}
     />
   );
 }

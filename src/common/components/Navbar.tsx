@@ -22,6 +22,7 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [myId, setMyId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loadingNotif, setLoadingNotif] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
@@ -193,7 +194,51 @@ export default function Navbar() {
   return (
     <nav className="w-full h-20 bg-white shadow-sm flex items-center justify-between px-10 relative z-40">
       <div className="flex items-center gap-4">
-        <button className="text-[#5856D6] text-3xl hover:opacity-80 transition">☰</button>
+
+        {/* ✅ Menú hamburguesa con dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-[#5856D6] text-3xl hover:opacity-80 transition"
+          >
+            ☰
+          </button>
+
+          {isMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+              <div className="absolute left-0 top-12 bg-white rounded-2xl shadow-xl border border-gray-100 w-52 z-50 py-2 overflow-hidden">
+                {!isAdmin && (
+                  <Link href="/chat-home" onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
+                    💬 Mis chats
+                  </Link>
+                )}
+                {!isAdmin && (
+                  <Link href="/profile" onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
+                    👤 Mi perfil
+                  </Link>
+                )}
+                <Link href="/feed" onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
+                  🏠 Feed
+                </Link>
+                {!isAdmin && (
+                  <Link href="/questions" onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
+                    ❓ Preguntas
+                  </Link>
+                )}
+                <Link href="/monitors" onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-[#EBEBFF] hover:text-[#5856D6] transition-colors font-medium">
+                  📡 Monitores
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+
         <Link href="/feed">
           <Image src="/IcesiConnect.png" alt="Icesi Connect" width={160} height={40} className="object-contain" />
         </Link>
@@ -209,8 +254,7 @@ export default function Navbar() {
               className={`transition ${
                 isActive
                   ? "text-[#5856D6] border-b-2 border-[#5856D6] pb-1"
-                  : "text-gray-400 hover:text-[#5856D6]"
-              }`}
+                  : "text-gray-400 hover:text-[#5856D6]"}`}
             >
               {label}
             </Link>
@@ -222,9 +266,7 @@ export default function Navbar() {
         {!isAdmin && (
           <button
             onClick={() => { setIsModalOpen(true); setHasChecked(false); }}
-            className="p-2 rounded-full hover:bg-gray-100 transition relative"
-            aria-label="Notificaciones"
-          >
+            className="p-2 rounded-full hover:bg-gray-100 transition relative" aria-label="Notificaciones">
             <span className="text-2xl">🔔</span>
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
