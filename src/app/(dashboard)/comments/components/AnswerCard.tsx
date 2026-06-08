@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnswerResponse } from "../services/answer.service";
 
 type Props = {
@@ -47,19 +47,34 @@ export default function AnswerCard({ answer }: Props) {
 
     const currentUserId = getCurrentUserId();
     if (!currentUserId) return;
-
-    // No puedes darte gracias a ti mismo
     if (currentUserId === answer.user.id) return;
 
     setSending(true);
     try {
       const token = getToken();
 
-      // Obtener el nombre del usuario que da gracias
+      // Obtener nombre del usuario que da gracias
       const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const me = await meRes.json();
+
+      // Obtener el student del usuario que recibe el gracias
+      const studentRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/students/user/${answer.user.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const student = await studentRes.json();
+
+      // Incrementar el contador de thanks
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/${student.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ thanks: (student.thanks ?? 0) + 1 }),
+      });
 
       // Crear la notificación
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications`, {
