@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import InputField from "./components/InputField";
 import loginAction from "./login.action";
@@ -35,7 +34,6 @@ export default function Login() {
       setErrorMessage(result.message || "Credenciales incorrectas o error en el servidor");
       setIsLoading(false);
     } else {
-      // Limpiar setup anterior para que cada usuario pase por su propio flujo
       localStorage.removeItem("userSetup");
 
       if (result.userId) localStorage.setItem("userId", result.userId.toString());
@@ -48,11 +46,9 @@ export default function Login() {
         const permissions: string[] = payload.permissions ?? [];
 
         if (permissions.includes("manage_users")) {
-          // Admin → setup no necesario, directo al feed
           localStorage.setItem("userSetup", JSON.stringify({ hasSetup: true }));
           window.location.href = "/feed";
         } else {
-          // Estudiante → va al setup para configurar carrera y semestre
           window.location.href = "/setup";
         }
       } else {
@@ -105,16 +101,6 @@ export default function Login() {
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>
-
-          <p className="text-center text-gray-600 mt-6 text-sm">- Or sign in with -</p>
-
-          <div className="flex justify-center gap-4 mt-4">
-            {["/Google.png", "/microsoft.png", "/x.png"].map((src, i) => (
-              <div key={i} className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow cursor-pointer hover:scale-105 transition">
-                <Image src={src} alt="Social" width={24} height={24} />
-              </div>
-            ))}
-          </div>
 
           <p className="text-center text-sm mt-6 text-gray-600">
             Don't have an account?{" "}
