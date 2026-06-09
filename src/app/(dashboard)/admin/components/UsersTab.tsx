@@ -68,7 +68,7 @@ export default function UsersTab() {
           disabled={loading}
           className="bg-[#5856D6] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-[#4644c4] transition disabled:opacity-60"
         >
-          {loading ? "Cargando..." : "👥 Cargar usuarios"}
+          {loading ? "Cargando..." : "Cargar usuarios"}
         </button>
       </div>
 
