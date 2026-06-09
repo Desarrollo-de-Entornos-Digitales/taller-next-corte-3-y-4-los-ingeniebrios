@@ -4,20 +4,24 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { MonitorResponse } from "../services/monitor.service";
 
+// Props interface for MonitorCard
 interface MonitorCardProps {
   monitor: MonitorResponse;
   onDeleted?: (id: number) => void;
 }
 
+// Helper function to get valid avatar
 const getAvatar = (avatar: string | null | undefined, name: string) => {
   if (avatar && avatar.startsWith("data:")) return avatar;
   return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(name)}`;
 };
 
+// Get authentication token
 const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
+// Check if current user is admin
 const checkIsAdmin = (): boolean => {
   try {
     const token = getToken();
@@ -29,6 +33,7 @@ const checkIsAdmin = (): boolean => {
   }
 };
 
+// Monitor Card component - displays individual monitor profile
 export default function MonitorCard({ monitor, onDeleted }: MonitorCardProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [deleting, setDeleting] = useState(false);

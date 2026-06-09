@@ -1,17 +1,21 @@
-// components/LogoButton.tsx
+// LogoButton Component - clickable logo button for navigation
+// Client component that handles navigation on click
 "use client";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+// Props interface for LogoButton component
 interface LogoButtonProps {
   href: string;
   className?: string;
 }
 
+// Logo button component with hover and click animations
 export default function LogoButton({ href, className = "" }: LogoButtonProps) {
   const router = useRouter();
 
+  // Handle click event - navigate to specified href
   const handleClick = () => {
     router.push(href);
   };

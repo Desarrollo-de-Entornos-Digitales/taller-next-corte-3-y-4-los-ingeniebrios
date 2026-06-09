@@ -1,3 +1,5 @@
+// Chat Page - specific conversation page
+// Server component that fetches conversation data
 import { getCurrentUserAction, getConversationAction, getAllMessagesAction, getFriendsAction, getMonitorsAction, getStudentsAction } from "../actions/chat.action";
 import ChatClient from "../components/ChatClient";
 import axiosClient, { safeRequest } from "../../../../lib/axios/client";
@@ -6,6 +8,7 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+// Chat Page component
 export default async function ChatPage({ params }: Props) {
   const { id } = await params;
   const receiverId = Number(id);

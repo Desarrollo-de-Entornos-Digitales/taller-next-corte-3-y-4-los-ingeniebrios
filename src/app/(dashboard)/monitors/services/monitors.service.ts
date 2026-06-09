@@ -1,5 +1,6 @@
 import axiosClient, { ApiResult, safeRequest } from "../../../../lib/axios/client";
 
+// Type definition for monitor response
 export interface MonitorResponse {
   id: number;
   subject: string;
@@ -14,7 +15,9 @@ export interface MonitorResponse {
   };
 }
 
+// Monitor Service - manages monitor API operations
 class MonitorService {
+  // Retrieve all monitors from API
   async getMonitors(): Promise<ApiResult<MonitorResponse[]>> {
     return safeRequest(axiosClient.get<MonitorResponse[]>("/monitors"));
   }

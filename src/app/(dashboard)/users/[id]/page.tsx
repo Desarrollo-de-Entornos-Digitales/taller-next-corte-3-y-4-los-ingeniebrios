@@ -10,6 +10,7 @@ import {
   getUserPosts,
 } from "./services/user-profile.service";
 
+// User Profile Page - displays profile for a specific user (by ID)
 export default function UserProfilePage() {
   const params = useParams();
 
@@ -17,6 +18,7 @@ export default function UserProfilePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch user profile and posts on mount
   useEffect(() => {
     const fetchData = async () => {
       try {

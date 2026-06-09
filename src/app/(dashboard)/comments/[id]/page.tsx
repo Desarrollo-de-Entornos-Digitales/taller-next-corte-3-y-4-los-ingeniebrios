@@ -7,10 +7,13 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+// Comments Page - displays a specific question and its answers
+// Server component that fetches the question data
 export default async function CommentsPage({ params }: Props) {
   const { id } = await params;
   const postId = Number(id);
 
+  // Fetch the specific post by ID
   const result = await postsService.getPostById(postId);
 
   if (result.error) {
@@ -23,6 +26,6 @@ export default async function CommentsPage({ params }: Props) {
     );
   }
 
-  // ✅ Pasamos el post como prop al componente cliente
+  // Pass post as prop to client component
   return <CommentsClient post={result.data} />;
 }

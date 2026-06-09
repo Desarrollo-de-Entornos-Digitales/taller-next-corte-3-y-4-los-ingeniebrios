@@ -1,13 +1,14 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
+// Create axios instance with API base URL from environment variables
 const axiosClient = axios.create({
-    // Usamos tu variable de entorno
     baseURL: process.env.NEXT_PUBLIC_API_URL, 
     headers: {
         "Content-Type": "application/json"
     }
 });
 
+// Helper function to set Bearer token in request headers
 const setAuthorizationHeader = (config: InternalAxiosRequestConfig, token?: string) => {
     if (!token) return;
 
@@ -18,12 +19,13 @@ const setAuthorizationHeader = (config: InternalAxiosRequestConfig, token?: stri
 const onRequest = async (config: InternalAxiosRequestConfig) => {
     let token: string | undefined;
 
-    // Si Next.js ejecuta esto en el Servidor (Server Components / Server Actions)
+    // If running on server (Next.js Server Components / Server Actions)
+    // retrieve token from cookies
     if (typeof window === "undefined") {
         const { cookies } = await import("next/headers");
         token = (await cookies()).get("token")?.value;
     } else {
-        // Si se ejecuta en el Navegador (Client Components)
+        // If running in browser (Client Components), retrieve token from localStorage
         token = localStorage.getItem("token") ?? undefined;
     }
     
@@ -39,11 +41,13 @@ const onError = (error: AxiosError) => {
     return Promise.reject(error);
 };
 
-// Activar los interceptores
+// Axios interceptors for handling requests and responses
+// Request interceptor: attaches authorization token to all requests
 axiosClient.interceptors.request.use(onRequest, onError);
+// Response interceptor: handles successful responses and errors
 axiosClient.interceptors.response.use(onSuccess, onError);
 
-// Tipado unificado para las respuestas de la API
+// Unified type for API responses with either success or error state
 export type ApiResult<T> = {
     error: false;
     data: T;
@@ -54,7 +58,8 @@ export type ApiResult<T> = {
     status?: number;
 };
 
-// Envoltorio seguro para ejecutar peticiones HTTP sin romper la app
+// Safe wrapper function for making HTTP requests without breaking the app
+// Catches errors and returns a consistent ApiResult type
 export async function safeRequest<T>(request: Promise<AxiosResponse<T>>): Promise<ApiResult<T>> {
     try {
         const response = await request;

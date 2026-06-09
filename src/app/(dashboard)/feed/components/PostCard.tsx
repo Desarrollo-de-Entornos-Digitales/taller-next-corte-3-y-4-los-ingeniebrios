@@ -4,21 +4,25 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PostResponse } from '../../../../common/services/post.service';
 
+// Props interface for PostCard component
 interface PostCardProps {
   post: PostResponse;
   onDeleted?: (id: number) => void;
   onUpdated?: (updatedPost: PostResponse) => void;
 }
 
+// Helper function to get valid avatar URL
 const getAvatar = (avatar: string | null, name: string) => {
   if (avatar && avatar.startsWith("data:")) return avatar;
   return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(name)}`;
 };
 
+// Get authentication token from cookies or localStorage
 const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
+// Report reasons for content moderation
 const REPORT_REASONS = [
   "Contenido inapropiado",
   "Spam o publicidad",
@@ -27,6 +31,8 @@ const REPORT_REASONS = [
   "Otro",
 ];
 
+// Post Card component - individual post display in feed
+// Handles post interactions: delete, report, and edit
 const PostCard: React.FC<PostCardProps> = ({ post, onDeleted, onUpdated }) => {
   const [deleting, setDeleting] = useState(false);
   const [reported, setReported] = useState(false);

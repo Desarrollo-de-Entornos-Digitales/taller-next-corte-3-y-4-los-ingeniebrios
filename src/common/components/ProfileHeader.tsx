@@ -3,10 +3,10 @@
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import ProfilePostCard from "./ProfilePostCard";``
+import ProfilePostCard from "./ProfilePostCard";
 import { Post } from "../services/profile.service";
 
-
+// Interface for user profile data displayed in header
 interface ProfileHeaderProps {
   user: {
     id: number;
@@ -23,8 +23,10 @@ interface ProfileHeaderProps {
   isOwnProfile?: boolean;
 }
 
+// Type for friendship status
 type FriendshipStatus = 'none' | 'pending' | 'accepted';
 
+// Interface for friend user data
 interface FriendUser {
   id: number;
   name: string;
@@ -32,9 +34,11 @@ interface FriendUser {
   avatar?: string;
 }
 
+// Helper function to validate and return avatar URL
 const getValidAvatar = (avatar: string) =>
   avatar?.startsWith("data:") ? avatar : "/avatar.png";
 
+// Get authentication token from cookies or localStorage
 const getToken = () =>
   localStorage.getItem("token") ??
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1] ??
@@ -48,11 +52,13 @@ export default function ProfileHeader({ user, posts, isOwnProfile = false }: Pro
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // State for friendship interactions
   const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>('none');
   const [friendshipRequestId, setFriendshipRequestId] = useState<number | null>(null);
   const [friendsList, setFriendsList] = useState<FriendUser[]>([]);
   const [friendsCount, setFriendsCount] = useState(user.friends);
 
+  // Load friendship data and friend list for the user
   const loadFriendshipData = useCallback(async () => {
     try {
       const token = getToken();

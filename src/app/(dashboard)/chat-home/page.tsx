@@ -1,6 +1,9 @@
+// Chat Home Page - displays conversations list
+// Server component that fetches user data, messages, friends, and monitors
 import { getCurrentUserAction, getAllMessagesAction, getFriendsAction, getMonitorsAction, getStudentsAction } from "../chat/actions/chat.action";
 import ChatHomeClient from "./ChatHomeClient";
 
+// Chat Home Page component
 export default async function ChatHomePage() {
   const meResult = await getCurrentUserAction();
   if (meResult.error) {

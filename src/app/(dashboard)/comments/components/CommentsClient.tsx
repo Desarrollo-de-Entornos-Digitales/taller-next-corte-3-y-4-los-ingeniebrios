@@ -11,11 +11,14 @@ type Props = {
   post: PostResponse;
 };
 
+// Comments Client component - displays question and answers
+// Client component that manages answers and form state
 export default function CommentsClient({ post }: Props) {
   const [answers, setAnswers] = useState<any[]>([]);
   const [loadingAnswers, setLoadingAnswers] = useState(true);
   const [, startTransition] = useTransition();
 
+  // Fetch answers for the current post
   const fetchAnswers = () => {
     startTransition(async () => {
       setLoadingAnswers(true);

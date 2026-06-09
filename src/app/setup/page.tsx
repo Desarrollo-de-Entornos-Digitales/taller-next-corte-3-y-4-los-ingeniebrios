@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+// Interface representing an academic career option
 interface Career {
   id: number;
   name: string;
 }
 
+// List of all available academic career options at the university
 const ACADEMIC_CAREERS: Career[] = [
   { id: 1, name: "Ingeniería de Sistemas" },
   { id: 2, name: "Ingeniería Telemática" },

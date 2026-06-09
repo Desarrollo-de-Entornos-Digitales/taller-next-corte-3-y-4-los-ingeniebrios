@@ -8,6 +8,7 @@ type Props = {
   onAnswerSent: () => void;
 };
 
+// Answer Form component - form for submitting new answers
 export default function AnswerForm({ postId, onAnswerSent }: Props) {
   const [content, setContent] = useState("");
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -16,6 +17,7 @@ export default function AnswerForm({ postId, onAnswerSent }: Props) {
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Handle image file selection and conversion to base64
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -28,6 +30,7 @@ export default function AnswerForm({ postId, onAnswerSent }: Props) {
     reader.readAsDataURL(file);
   };
 
+  // Handle form submission for creating answer
   const handleSubmit = async () => {
     if (!content.trim()) {
       setError("Escribe una respuesta antes de enviar.");

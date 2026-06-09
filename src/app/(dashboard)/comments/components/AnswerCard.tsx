@@ -7,6 +7,7 @@ type Props = {
   answer: AnswerResponse;
 };
 
+// Report reasons for content moderation
 const REPORT_REASONS = [
   "Contenido inapropiado",
   "Spam o publicidad",
@@ -15,10 +16,12 @@ const REPORT_REASONS = [
   "Otro",
 ];
 
+// Get token from storage
 const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
+// Get current user ID from token
 const getCurrentUserId = (): number | null => {
   try {
     const token = getToken();
@@ -30,6 +33,8 @@ const getCurrentUserId = (): number | null => {
   }
 };
 
+// Answer Card component - displays individual answer/response
+// Handles thanks, reporting, and other interactions
 export default function AnswerCard({ answer }: Props) {
   const level = answer.user.student?.level ?? 1;
   const [thanked, setThanked] = useState(false);

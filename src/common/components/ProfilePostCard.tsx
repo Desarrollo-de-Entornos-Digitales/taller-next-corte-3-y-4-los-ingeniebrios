@@ -28,16 +28,20 @@ const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
+// Profile Post Card component - displays individual post in user profile
+// Allows expanding to view answers/responses to the post
 export default function ProfilePostCard({ post }: ProfilePostCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Format date to local Spanish format
   const date = new Date(post.createdAt).toLocaleDateString("es-CO", {
     day: "numeric",
     month: "short",
   });
 
+  // Handle post expansion to show/hide answers
   const handleExpand = async () => {
     if (expanded) {
       setExpanded(false);

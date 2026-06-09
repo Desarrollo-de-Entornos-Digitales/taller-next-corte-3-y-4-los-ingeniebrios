@@ -1,13 +1,17 @@
+// Questions Page - page for creating new questions
+// Server component that fetches categories and faculties
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import QuestionForm from "./components/QuestionForm";
 import { postsService } from "../../../common/services/post.service";
 import { facultyService } from "../../../common/services/faculty.service";
 
+// Questions page component
 export default async function QuestionsPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
+  // Redirect admin users to feed instead
   if (token) {
     try {
       const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
@@ -17,6 +21,7 @@ export default async function QuestionsPage() {
     } catch {}
   }
 
+  // Fetch categories and faculties in parallel
   const [categoriesResult, facultiesResult] = await Promise.all([
     postsService.getCategories(),
     facultyService.getFaculties(),

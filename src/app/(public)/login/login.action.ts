@@ -3,18 +3,22 @@
 import { cookies } from "next/headers";
 import { loginService } from "./services/login.service";
 
+// Server Action for handling user login
+// Validates credentials, handles errors, and sets authentication cookie
 export default async function loginAction(email: string, password: string) {
     const result = await loginService.login(email, password);
 
+    // Handle login errors
     if (result.error) {
         if (result.status === 404) {
             return {
                 error: true,
-                message: "Correo institucional o contraseña incorrectos. Por favor, verifica tus datos."
+                message: "Email or password incorrect. Please verify your credentials."
             };
         }
         if (result.status === 401) {
             const serverMessage = (result.message ?? "").toLowerCase();
+            // Check for account ban/disabled status
             if (
                 serverMessage.includes("deshabilitada") ||
                 serverMessage.includes("baneado") ||
@@ -38,6 +42,7 @@ export default async function loginAction(email: string, password: string) {
 
     let token: string | undefined = undefined;
 
+    // Extract token from response
     if (result.data) {
         token = (result.data as any).access_token ||
                 (result.data as any).token ||
@@ -51,9 +56,11 @@ export default async function loginAction(email: string, password: string) {
         };
     }
 
+    // Decode JWT token to extract user information
     const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
     const userId = payload.sub || payload.id || payload.userId;
 
+    // Store token in cookie
     const cookiesStore = await cookies();
     cookiesStore.set("token", token, {
         httpOnly: false,

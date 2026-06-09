@@ -7,9 +7,11 @@ import MonitorsTab from "./MonitorsTab";
 
 type Tab = "reports" | "users" | "monitors";
 
+// Admin Panel component - main admin dashboard with tabs
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<Tab>("reports");
 
+  // Tabs definition for admin panel
   const tabs = [
     { id: "reports" as Tab, label: "Reportes", },
     { id: "users" as Tab, label: "Usuarios", },

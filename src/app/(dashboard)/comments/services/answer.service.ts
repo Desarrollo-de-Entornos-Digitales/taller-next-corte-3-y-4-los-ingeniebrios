@@ -1,6 +1,7 @@
 
 import axiosClient, { ApiResult, safeRequest } from "../../../../lib/axios/client";
 
+// Type definition for answer user
 export type AnswerUserResponse = {
   id: number;
   name: string;
@@ -10,6 +11,7 @@ export type AnswerUserResponse = {
   };
 };
 
+// Type definition for answer response
 export type AnswerResponse = {
   id: number;
   description: string;
@@ -19,6 +21,7 @@ export type AnswerResponse = {
   post: { id: number };
 };
 
+// Type definition for creating an answer
 export type CreateAnswerDto = {
   description: string;
   image?: string | null;
@@ -27,6 +30,7 @@ export type CreateAnswerDto = {
 
 export type { ApiResult };
 
+// Answer Service - manages all answer API operations
 class AnswerService {
   async getAnswersByPost(postId: number): Promise<ApiResult<AnswerResponse[]>> {
     return safeRequest(axiosClient.get<AnswerResponse[]>("/answer"));

@@ -1,13 +1,15 @@
-// src/app/(public)/login/components/InputField.tsx
+// InputField Component - reusable input component for login form
+// Client component for form input fields with styling
 "use client";
 
 type InputFieldProps = {
   name: string;
   placeholder: string;
   type: string;
-  required?: boolean; // Lo hacemos opcional por si acaso
+  required?: boolean; // Optional since input is reusable
 };
 
+// Render styled input field with focus states
 export default function InputField({
   name,
   placeholder,

@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from "react";
 
+// Interface for student data
 interface Student {
   id: number;
   user: { id: number; name: string; };
   career?: { name: string };
 }
 
+// Get token from cookies or localStorage
 const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
+// Monitors Tab component - create and manage monitor accounts
 export default function MonitorsTab() {
   const [students, setStudents] = useState<Student[]>([]);
   const [subject, setSubject] = useState("");
@@ -21,6 +24,7 @@ export default function MonitorsTab() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  // Fetch students list on component mount
   useEffect(() => {
     const fetchStudents = async () => {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students`, {
@@ -34,6 +38,7 @@ export default function MonitorsTab() {
     fetchStudents();
   }, []);
 
+  // Handle creating a new monitor
   const handleCreate = async () => {
     if (!subject.trim() || !availability.trim() || !selectedStudentId) {
       setError("Por favor completa todos los campos.");

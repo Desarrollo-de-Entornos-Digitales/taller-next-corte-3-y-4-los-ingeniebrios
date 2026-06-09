@@ -1,13 +1,16 @@
+// Feed Page - displays questions feed from backend
+// Server component that fetches posts and categories
 import FeedContent from "./components/FeedContent";
 import { postsService, PostResponse, PostCategoryResponse } from "../../../common/services/post.service";
 
 export default async function FeedPage() {
-  // Consumimos de manera asíncrona los posts y categorías inyectados por el SQL
+  // Fetch posts and categories asynchronously from API
   const [postsResult, categoriesResult] = await Promise.all([
     postsService.getPosts(),
     postsService.getCategories(),
   ]);
 
+  // Extract data or use empty arrays if error
   const posts: PostResponse[] = postsResult.error ? [] : postsResult.data;
   const categories: PostCategoryResponse[] = categoriesResult.error ? [] : categoriesResult.data;
 

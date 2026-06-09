@@ -1,10 +1,9 @@
 // src/common/services/post.service.ts
-// Agrega getPostById al service que ya tienes
+// Post Service - handles all post-related API operations
 
 import axiosClient, {ApiResult, safeRequest} from "../../lib/axios/client";
 
-
-
+// Type definition for post author (user information)
 export type PostUserResponse = {
   id: number;
   name: string;
@@ -14,11 +13,13 @@ export type PostUserResponse = {
   };
 };
 
+// Type definition for post category
 export type PostCategoryResponse = {
   id: number;
   name: string;
 };
 
+// Type definition for a complete post object
 export type PostResponse = {
   id: number;
   title: string;
@@ -31,6 +32,7 @@ export type PostResponse = {
   answers?: { id: number }[]; 
 };
 
+// Data Transfer Object for creating a new post
 export type CreatePostDto = {
   title: string;
   description: string;
@@ -42,20 +44,24 @@ export type CreatePostDto = {
 
 export type { ApiResult };
 
+// Posts Service - manages all post API operations
 class PostsService {
+  // Retrieve all posts from the API
   async getPosts(): Promise<ApiResult<PostResponse[]>> {
     return safeRequest(axiosClient.get<PostResponse[]>("/posts"));
   }
 
-  // ← NUEVO: usado en la página de comentarios
+  // Get a specific post by ID - used in comments page
   async getPostById(id: number): Promise<ApiResult<PostResponse>> {
     return safeRequest(axiosClient.get<PostResponse>(`/posts/${id}`));
   }
 
+  // Retrieve all available post categories
   async getCategories(): Promise<ApiResult<PostCategoryResponse[]>> {
     return safeRequest(axiosClient.get<PostCategoryResponse[]>("/categories"));
   }
 
+  // Create a new post with the provided data
   async createPost(payload: CreatePostDto): Promise<ApiResult<PostResponse>> {
     return safeRequest(axiosClient.post<PostResponse>("/posts", payload));
   }

@@ -1,9 +1,9 @@
-// src/app/(dashboard)/monitors/page.tsx — REEMPLAZAR
-// Server Component — fetcha los monitores con cookie httpOnly
-
+// Monitors Page - displays list of tutors/monitors
+// Server component that fetches monitors data
 import { getMonitorsAction } from "./actions/monitors.action";
 import MonitoresClient from "./components/MonitoresClient";
 
+// Monitors Page component
 export default async function MonitoresPage() {
   const result = await getMonitorsAction();
   const monitors = result.error ? [] : result.data;

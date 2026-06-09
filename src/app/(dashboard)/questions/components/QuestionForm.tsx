@@ -5,7 +5,7 @@ import { PostCategoryResponse } from '../../../../common/services/post.service';
 import { FacultyResponse } from '../../../../common/services/faculty.service';
 import { createPostAction } from '../create-post.action';
 
-// 📋 Lista oficial de categorías de preguntas (SQL de respaldo)
+// Official list of question categories (SQL fallback)
 const OFFICIAL_CATEGORIES = [
   { id: 1, name: "Negocios y Economía" },
   { id: 2, name: "Ingeniería, Tecnología y Diseño" },
@@ -14,7 +14,7 @@ const OFFICIAL_CATEGORIES = [
   { id: 5, name: "Educación y Núcleo Común" }
 ];
 
-// 📋 Lista oficial de Facultades (SQL de respaldo)
+// Official list of Faculties (SQL fallback)
 const OFFICIAL_FACULTIES = [
   { id: 1, name: "Facultad de Ciencias Administrativas y Económicas" },
   { id: 2, name: "Facultad Barberi de Ingeniería, Diseño y Ciencias Aplicadas" },
@@ -23,11 +23,13 @@ const OFFICIAL_FACULTIES = [
   { id: 5, name: "Facultad de Ciencias de la Educación" }
 ];
 
+// Props interface for QuestionForm component
 interface QuestionFormProps {
   categories: PostCategoryResponse[];
   faculties: FacultyResponse[];
 }
 
+// Question Form component - allows users to create new questions
 export default function QuestionForm({ categories, faculties }: QuestionFormProps) {
   const [title, setTitle] = useState("");
   const [categoryId, setCategoryId] = useState<number | "">("");

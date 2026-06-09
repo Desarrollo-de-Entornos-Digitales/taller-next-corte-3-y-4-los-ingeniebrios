@@ -6,6 +6,7 @@ import { MessageResponse, FriendUser } from "../chat/actions/chat.action";
 type User = { id: number; name: string; avatar: string | null };
 type Tab = "chats" | "amigos" | "estudiantes" | "monitores";
 
+// Props interface for ChatHomeClient
 type Props = {
   me: User;
   allMessages: MessageResponse[];
@@ -15,11 +16,13 @@ type Props = {
   isMonitor: boolean;
 };
 
+// Helper function to get valid avatar URL
 function getAvatar(avatar: string | null | undefined, name: string) {
   if (avatar && avatar.startsWith("data:")) return avatar;
   return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(name)}`;
 }
 
+// Format time to HH:MM format
 function formatTimeShort(dateStr: string) {
   try {
     return new Intl.DateTimeFormat("es-CO", {
@@ -28,6 +31,7 @@ function formatTimeShort(dateStr: string) {
   } catch { return dateStr; }
 }
 
+// Build conversations from messages
 function buildConversations(allMessages: MessageResponse[], myId: number) {
   const map = new Map<number, { user: User; lastMessage: MessageResponse }>();
   for (const msg of allMessages) {
@@ -42,6 +46,7 @@ function buildConversations(allMessages: MessageResponse[], myId: number) {
   );
 }
 
+// Chat Home Client component - main chat list interface
 export default function ChatHomeClient({ me, allMessages, friends, monitors, students, isMonitor }: Props) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<Tab>("chats");

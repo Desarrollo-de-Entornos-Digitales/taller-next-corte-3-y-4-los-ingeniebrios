@@ -6,6 +6,7 @@ type Props = {
   post: PostResponse;
 };
 
+// Helper function to calculate time difference
 function timeAgo(dateStr: string): string {
   if (!dateStr) return "Hace un momento";
   const date = new Date(dateStr);
@@ -20,6 +21,7 @@ function timeAgo(dateStr: string): string {
   return `Hace ${days} día${days > 1 ? "s" : ""}`;
 }
 
+// Question Card component - displays the original question
 export default function QuestionCard({ post }: Props) {
   const level = post.user.student?.level ?? 1;
 

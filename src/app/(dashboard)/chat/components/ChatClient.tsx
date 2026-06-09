@@ -10,6 +10,7 @@ import {
 
 type User = { id: number; name: string; avatar: string | null };
 
+// Props interface for ChatClient
 type Props = {
   me: User;
   receiver: User;
@@ -21,11 +22,13 @@ type Props = {
   isMonitor: boolean;
 };
 
+// Helper function for avatar URL
 function getAvatar(avatar: string | null | undefined, name: string) {
   if (avatar && avatar.startsWith("data:")) return avatar;
   return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(name)}`;
 }
 
+// Format time with date and time
 function formatTime(dateStr: string) {
   try {
     return new Intl.DateTimeFormat("es-CO", {
@@ -35,6 +38,7 @@ function formatTime(dateStr: string) {
   } catch { return dateStr; }
 }
 
+// Format time to HH:MM only
 function formatTimeShort(dateStr: string) {
   try {
     return new Intl.DateTimeFormat("es-CO", {
@@ -43,6 +47,7 @@ function formatTimeShort(dateStr: string) {
   } catch { return dateStr; }
 }
 
+// Build conversations from messages
 function buildConversations(allMessages: MessageResponse[], myId: number) {
   const map = new Map<number, { user: User; lastMessage: MessageResponse }>();
   for (const msg of allMessages) {
@@ -59,6 +64,7 @@ function buildConversations(allMessages: MessageResponse[], myId: number) {
 
 type Tab = "chats" | "amigos" | "estudiantes" | "monitores";
 
+// Chat Client component - manages individual conversation
 export default function ChatClient({ me, receiver, initialMessages, allMessages, friends, monitors, students, isMonitor }: Props) {
   const [messages, setMessages] = useState<MessageResponse[]>(initialMessages);
   const [content, setContent] = useState("");

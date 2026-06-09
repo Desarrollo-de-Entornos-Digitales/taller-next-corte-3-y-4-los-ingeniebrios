@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import ProfileHeader from "../../../common/components/ProfileHeader";
 import { getCurrentUser, getUserPosts, User, Post } from "./services/profile.service";
 
+// User Profile Page - displays current user's profile and posts
+// Redirects admins to admin panel
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -15,6 +17,7 @@ export default function ProfilePage() {
     const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
       ?? localStorage.getItem("token");
 
+    // Check if user is admin and redirect
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
@@ -25,6 +28,7 @@ export default function ProfilePage() {
       } catch {}
     }
 
+    // Fetch user data and posts
     const fetchData = async () => {
       try {
         const currentUser = await getCurrentUser();

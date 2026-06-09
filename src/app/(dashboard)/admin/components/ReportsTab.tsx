@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+// Interface for report data
 interface Report {
   id: number;
   reason: string;
@@ -10,15 +11,18 @@ interface Report {
   reported: { id: number; name: string; };
 }
 
+// Get token from cookies or localStorage
 const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
+// Reports Tab component - displays and manages user reports
 export default function ReportsTab() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
 
+  // Fetch reports from API
   const fetchReports = async () => {
     setLoading(true);
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
@@ -33,6 +37,7 @@ export default function ReportsTab() {
     setLoading(false);
   };
 
+  // Mark report as resolved
   const resolveReport = async (id: number) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}`, {
       method: "PATCH",
@@ -47,6 +52,7 @@ export default function ReportsTab() {
     }
   };
 
+  // Delete a report
   const deleteReport = async (id: number) => {
     if (!confirm("¿Eliminar este reporte?")) return;
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}`, {

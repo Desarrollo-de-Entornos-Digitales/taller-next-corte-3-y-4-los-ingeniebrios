@@ -1,6 +1,8 @@
 // src/app/(public)/register/service/register.service.ts
+// Register Service - handles user registration API calls
 import axiosClient from "../../../../lib/axios/client"; 
 
+// Type definition for registration API response
 export interface RegisterResponse {
     access_token: string;
     user: {
@@ -10,7 +12,9 @@ export interface RegisterResponse {
     };
 }
 
+// Register Service class
 class RegisterService {
+    // Create new user account with provided data
     async register(userData: any): Promise<RegisterResponse> {
         try {
             const response = await axiosClient.post<RegisterResponse>("/auth/register", {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+// Interface for user data
 interface User {
   id: number;
   name: string;
@@ -11,15 +12,18 @@ interface User {
   role: { name: string };
 }
 
+// Get token from cookies or localStorage
 const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
+// Users Tab component - manage and ban/unban users
 export default function UsersTab() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
 
+  // Fetch all users from API
   const fetchUsers = async () => {
     setLoading(true);
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
@@ -34,6 +38,7 @@ export default function UsersTab() {
     setLoading(false);
   };
 
+  // Ban or unban a user
   const banUser = async (id: number, name: string, isActive: boolean) => {
     const action = isActive ? "banear" : "desbanear";
     if (!confirm(`¿Estás seguro de que quieres ${action} a ${name}?`)) return;

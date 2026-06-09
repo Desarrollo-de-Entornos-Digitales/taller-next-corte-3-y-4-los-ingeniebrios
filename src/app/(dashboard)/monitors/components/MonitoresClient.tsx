@@ -4,13 +4,16 @@ import { useState } from "react";
 import MonitorCard from "./MonitorCard";
 import { MonitorResponse } from "../services/monitors.service";
 
+// Props interface for MonitoresClient
 type Props = {
   initialMonitors: MonitorResponse[];
 };
 
+// Monitors Client component - displays list of monitors with search
 export default function MonitoresClient({ initialMonitors }: Props) {
   const [search, setSearch] = useState("");
 
+  // Filter monitors by search query
   const filtered = initialMonitors.filter((m) => {
     const query = search.toLowerCase().trim();
     if (!query) return true;

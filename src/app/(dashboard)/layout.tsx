@@ -1,20 +1,22 @@
-// src/app/(dashboard)/layout.tsx
+// Dashboard Layout - protects all dashboard routes
+// Redirects to login if user is not authenticated
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Navbar from "../../common/components/Navbar";
 
+// Server Component for dashboard layout
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-    // 1. Leemos las cookies del navegador desde el servidor de Next.js
+    // Read cookies from browser on Next.js server
     const cookiesStore = await cookies();
     const token = cookiesStore.get("token")?.value;
 
-    // 2. 🔒 SI NO HAY TOKEN: Bloqueo inmediato.
-    // Si escribe /feed en la URL, Next.js frena la renderización aquí mismo y lo bota a /login
+    // Protect dashboard routes - block access without token
+    // If user tries to access /feed without token, redirect to /login
     if (!token) {
         redirect("/login");
     }
 
-    // 3. Si sí hay token, se muestra la aplicación común y corriente
+    // If token exists, render application normally
     return (
         <>
             <Navbar title="Dashboard" />

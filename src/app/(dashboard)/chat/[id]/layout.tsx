@@ -1,3 +1,4 @@
+// Chat Layout - fixed positioning layout for chat interface
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
   return (
     <div

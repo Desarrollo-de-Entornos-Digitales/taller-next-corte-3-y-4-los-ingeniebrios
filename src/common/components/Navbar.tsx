@@ -4,6 +4,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
+// Interface for application notifications
 interface AppNotification {
   id: number;
   message: string;
@@ -16,6 +17,8 @@ interface AppNotification {
   };
 }
 
+// Navbar component - main navigation bar with notifications and user menu
+// Handles user profile data, notifications, and navigation
 export default function Navbar() {
   const pathname = usePathname();
   const [avatar, setAvatar] = useState("/avatar.png");
@@ -30,11 +33,13 @@ export default function Navbar() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
 
+  // Get authentication token from cookies or localStorage
   const getToken = () =>
     localStorage.getItem("token") ??
     document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1] ??
     null;
 
+  // Fetch user avatar and check admin status
   const fetchAvatar = useCallback(async () => {
     try {
       const token = getToken();
@@ -62,6 +67,7 @@ export default function Navbar() {
     }
   }, []);
 
+  // Fetch unread messages count for current user
   const fetchUnreadMessages = useCallback(async (userId: number) => {
     try {
       const token = getToken();
@@ -104,6 +110,7 @@ export default function Navbar() {
     }
   }, []);
 
+  // Fetch count of unread notifications for the user
   const fetchUnreadCount = useCallback(async (userId: number) => {
     try {
       const token = getToken();

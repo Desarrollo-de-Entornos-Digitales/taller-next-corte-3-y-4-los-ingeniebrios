@@ -2,7 +2,7 @@
 
 import { PostCategoryResponse } from '../../../../common/services/post.service';
 
-// 🎨 Mapeo de iconos asignados para cada una de las 5 categorías oficiales de la plataforma
+// Icon mapping for official 5 academic categories
 const categoryIcons: Record<string, string> = {
   "Negocios y Economía": "/icons/economicsicon.svg",
   "Ingeniería, Tecnología y Diseño": "/icons/programmingicons.svg",
@@ -11,7 +11,7 @@ const categoryIcons: Record<string, string> = {
   "Educación y Núcleo Común": "/icons/mathicon.svg" // Usa el icono que prefieras para educación
 };
 
-// 🛡️ Lista oficial de respaldo para garantizar que se rendericen aunque el backend devuelva otra data
+// Fallback list of official categories to ensure proper rendering
 const OFFICIAL_CATEGORIES: PostCategoryResponse[] = [
   { id: 1, name: "Negocios y Economía" },
   { id: 2, name: "Ingeniería, Tecnología y Diseño" },
@@ -20,14 +20,16 @@ const OFFICIAL_CATEGORIES: PostCategoryResponse[] = [
   { id: 5, name: "Educación y Núcleo Común" }
 ];
 
+// Props interface for FeedFilters component
 interface FeedFiltersProps {
   categories: PostCategoryResponse[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
 }
 
+// Feed Filters component - sidebar with category filters
 export default function FeedFilters({ categories, selectedCategory, setSelectedCategory }: FeedFiltersProps) {
-  // Usamos las categorías del backend si existen y tienen el formato correcto, de lo contrario usamos la lista oficial
+  // Use backend categories if valid, otherwise use fallback list
   const validCategories = categories && categories.some(c => categoryIcons[c.name]) 
     ? categories 
     : OFFICIAL_CATEGORIES;

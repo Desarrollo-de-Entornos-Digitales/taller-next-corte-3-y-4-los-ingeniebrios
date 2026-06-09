@@ -5,6 +5,7 @@ import FeedFilters from "./FeedFilters";
 import PostCard from "./PostCard";
 import { PostResponse, PostCategoryResponse } from "../../../../common/services/post.service";
 
+// Icon mapping for different academic categories
 const iconMapping: Record<string, string> = {
   matematicas: "/icons/mathicon.svg",
   mathematics: "/icons/mathicon.svg",
@@ -20,15 +21,18 @@ const iconMapping: Record<string, string> = {
   programming: "/icons/programmingicons.svg",
 };
 
+// Props interface for FeedContent component
 interface FeedContentProps {
   posts: PostResponse[];
   categories: PostCategoryResponse[];
 }
 
+// Feed Content component - main feed display with filtering and post cards
 export default function FeedContent({ posts: initialPosts, categories }: FeedContentProps) {
   const [selectedCategory, setSelectedCategory] = useState("All categories");
   const [posts, setPosts] = useState<PostResponse[]>(initialPosts);
 
+  // Normalize category names and assign icons
   const sanitizedCategories = categories.map((cat) => {
     const normalizedName = cat.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     return {
@@ -37,14 +41,17 @@ export default function FeedContent({ posts: initialPosts, categories }: FeedCon
     };
   });
 
+  // Filter posts by selected category
   const filteredPosts = selectedCategory === "All categories"
     ? posts
     : posts.filter((post) => post.category?.name === selectedCategory);
 
+  // Handle when a post is deleted from the feed
   const handleDeleted = (id: number) => {
     setPosts(prev => prev.filter(p => p.id !== id));
   };
 
+  // Handle when a post is updated
   const handleUpdated = (updatedPost: PostResponse) => {
     setPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
   };
