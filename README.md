@@ -1,48 +1,48 @@
-# Aplicación Web - Taller Next.js (Cortes 3 y 4)
+# Web Application - Next.js Workshop (Sections 3 and 4)
 
-Este es un proyecto [Next.js](https://nextjs.org) desarrollado con [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a Next.js project developed with create-next-app.
 
-## Cómo Ejecutar el Código
+[https://nextjs.org/docs/app/api-reference/cli/create-next-app]. ## How to Run the Code
 
-### Requisitos Previos
+### Prerequisites
 
-Antes de ejecutar la aplicación, asegúrate de tener instalado:
+Before running the application, make sure you have the following installed:
 
-- **Node.js**: versión 18.0 o superior ([descargar aquí](https://nodejs.org/))
-- **npm** o **yarn** (incluido con Node.js)
-- **Git** (para clonar el repositorio)
+- **Node.js**: version 18.0 or higher (download here: https://nodejs.org/)
+- **npm** or **yarn** (included with Node.js)
+- **Git** (to clone the repository)
 
-### Instalación
+### Installation
 
-1. **Clonar el repositorio:**
+1. **Clone the repository:**
 
-    ```bash
-    git clone <url-del-repositorio>
-    cd taller-next-corte-3-y-4-los-ingeniebrios
-    ```
+``bash
+git clone <repository-url>
+cd taller-next-corte-3-y-4-los-ingeniebrios
+```
 
-2. **Instalar dependencias:**
-    ```bash
-    npm install
-    # o
-    yarn install
-    ```
+2. **Install dependencies:**
+```bash
+npm install
+# or
+yarn install
+```
 
-### Ejecución en Desarrollo
+### Running in Development
 
-Para iniciar el servidor de desarrollo:
+To start the development server:
 
 ```bash
 npm run dev
-# o
+# or
 yarn dev
 ```
 
-La aplicación estará disponible en [http://localhost:3001](http://localhost:3001). El servidor recargará automáticamente cuando hagas cambios en los archivos.
+The application will be available at [http://localhost:3001](http://localhost:3001). The server will automatically reload when you make changes to the files.
 
-### Compilación para Producción
+### Production Build
 
-Para generar una versión optimizada para producción:
+To generate a production-optimized version:
 
 ```bash
 npm run build
@@ -51,78 +51,80 @@ npm run start
 
 ---
 
-## Criterios de Evaluación del Proyecto
+## Project Evaluation Criteria
 
-### 1. Mockups de la Aplicación (20%)
+### 1. Application Mockups (20%)
 
-La aplicación fue diseñada previamente en Figma con una identidad visual coherente en todas las pantallas. Se definió una **paleta de colores consistente** con los colores de marca de la Universidad Icesi, que se aplica en toda la interfaz, desde los botones de acción hasta los fondos y elementos interactivos. Los lineamientos visuales garantizan uniformidad en espaciado, tipografía y componentes reutilizables.
+The application was previously designed in Figma with a consistent visual identity across all screens. A consistent color palette was defined using the Icesi University brand colors, which is applied throughout the interface, from action buttons to backgrounds and interactive elements. The visual guidelines ensure uniformity in spacing, typography, and reusable components.
 
-📌 **Figma Mockups:** 
+📌 **Figma Mockups:**
 
-### 2. Interfaz de Usuario (30%)
+### 2. User Interface (30%)
 
-La interfaz fue construida con **componentes React modulares** en Next.js. Cada sección tiene su propio componente:
+The interface was built using **modular React components** in Next.js. Each section has its own component:
 
-- **Autenticación:** Páginas de Login y Register (`/src/app/(public)/login`, `/src/app/(public)/register`) con validación en tiempo real de campos (email institucional, contraseña segura, confirmación de campos)
-- **Feed Principal:** Componentes como `PostCard`, `FeedFilters` y `PostList` que permite filtrar posts por categorías (Programación, Diseño, Matemáticas, etc.)
-- **Navegación:** Barra de navegación (`Navbar`) que facilita el movimiento entre secciones
-- **Sistema de filtros:** Los usuarios pueden filtrar contenido por categoría con una interfaz intuitiva y responsive
+- **Authentication:** Login and Register pages (`/src/app/(public)/login`, `/src/app/(public)/register`) with real-time validation of fields (institutional email, secure password, field confirmation)
+- **Main Feed:** Components such as `PostCard`, `FeedFilters`, and `PostList` that allow filtering posts by category (Programming, Design, Mathematics, etc.)
+- **Navigation:** Navigation bar (`Navbar`) that facilitates movement between sections
+- **Filter System:** Users can filter content by category with an intuitive and responsive interface
 
-El diseño es **atractivo y funcional** con uso de iconos SVG, avatares de usuarios, niveles de experiencia mostrados en cada publicación, y mensajes de error personalizados (en lugar de `window.alert`).
+The design is **attractive and functional** with the use of SVG icons, user avatars, experience levels displayed in each post, and custom error messages (instead of `window.alert`).
 
-### 3. Gestión del Estado (10%)
+### 3. State Management (10%)
 
-El estado se gestiona usando **React Hooks** (useState). La aplicación mantiene:
+State is managed using **React Hooks** (useState). The application maintains:
 
-- **Estado de categoría seleccionada** en el Feed: Los usuarios pueden cambiar la categoría filtrada y este estado se actualiza en tiempo real, filtrando automáticamente los posts mostrados
-- **Estado de autenticación:** Gestión de login y registro con tokens almacenados en localStorage, incluyendo email del usuario y estado de carga durante peticiones al servidor
+- **Selected Category State** in the Feed: Users can change the filtered category, and this state is updated in real time, automatically filtering the displayed posts.
+- **Authentication State:** Login and registration management with tokens stored in localStorage, including the user's email and loading status during server requests.
 
-### 4. Funcionalidades (20%)
+### 4. Functionalities (20%)
 
-Las funcionalidades clave implementadas incluyen:
+Key implemented functionalities include:
 
-- **Sistema de autenticación:** Login con email institucional (@u.icesi.edu.co) y registro con validación de contraseña segura
-- **Feed de preguntas y respuestas:** Visualización de posts categorizados con información del autor.
-- **Filtrado por categorías:** Los usuarios pueden explorar contenido específico de su interés (6 categorías disponibles)
-- **Validación de formularios:** Validación en cliente de campos requeridos, formatos de email, fortaleza de contraseña y coincidencia de contraseñas
+- **Authentication System:** Login with institutional email (@u.icesi.edu.co) and registration with secure password validation.
 
-### 5. Pruebas (10%)
+- **Question and Answer Feed:** Display of categorized posts with author information.
 
-Se implementaron **pruebas E2E automatizadas** con Cypress para validar:
+- **Category Filtering:** Users can explore specific content of interest (6 categories available)
+- **Form Validation:** Client-side validation of required fields, email formats, password strength, and password matching
 
-- Flujos de autenticación (login y registro exitosos)
-- Interacción con el feed y filtrado de categorías
-- Comportamiento responsive en diferentes tamaños de pantalla
-- Manejo de errores y mensajes de validación
+### 5. Testing (10%)
 
-### 6. Despliegue (10%)
+**Automated E2E tests** were implemented with Cypress to validate:
 
-La aplicación está lista para ser **desplegada en Vercel** para el frontend, con integración al backend. Los requisitos de despliegue incluyen:
+- Authentication flows (successful login and registration)
+- Feed interaction and category filtering
+- Responsive behavior on different screen sizes
+- Error handling and validation messages
 
-- **Frontend en Vercel:** Conexión automática con GitHub para despliegues continuos
-- **Backend:** Desplegado en Railway o plataforma alternativa
-- **Variables de entorno:** Configuración segura de endpoints del API y credenciales
-- **Testing en producción:** Validación de que la aplicación funciona correctamente en el entorno desplegado
+### 6. Deployment (10%)
+
+The application is ready to be **deployed to Vercel** for the frontend, with backend integration. Deployment requirements include:
+
+- **Frontend on Vercel:** Automatic connection to GitHub for continuous deployments
+- **Backend:** Deployed on Railway or an alternative platform
+- **Environment variables:** Secure configuration of API endpoints and credentials
+- **Production testing:** Validation that the application functions correctly in the deployed environment
 
 ---
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 src/
-├── app/              # Rutas y layouts de Next.js
-├── common/           # Componentes reutilizables
-└── lib/              # Utilidades y configuraciones
+├── app/ # Next.js routes and layouts
+├── common/ # Reusable components
+└── lib/ # Utilities and configurations
 ```
 
 ---
 
-## Aprende Más
+## Learn More
 
-Para aprender más sobre Next.js, consulta los siguientes recursos:
+To learn more about Next.js, check out the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - características y API de Next.js
-- [Learn Next.js](https://nextjs.org/learn) - tutorial interactivo
+- [Next.js Documentation](https://nextjs.org/docs) - Next.js features and APIs
+- [Learn Next.js](https://nextjs.org/learn) - interactive tutorial
 - [Next.js GitHub Repository](https://github.com/vercel/next.js)
 
 ---
