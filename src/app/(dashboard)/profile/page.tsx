@@ -25,7 +25,7 @@ export default function ProfilePage() {
           router.replace("/admin");
           return;
         }
-      } catch {}
+      } catch { }
     }
 
     // Fetch user data and posts

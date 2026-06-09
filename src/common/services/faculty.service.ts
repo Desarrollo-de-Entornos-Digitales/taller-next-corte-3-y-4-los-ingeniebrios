@@ -1,4 +1,4 @@
-import axiosClient, {ApiResult, safeRequest} from "../../lib/axios/client";
+import axiosClient, { ApiResult, safeRequest } from "../../lib/axios/client";
 
 // Type definition for Faculty API response
 export type FacultyResponse = {

@@ -169,7 +169,7 @@ export default function Navbar() {
         localStorage.setItem(`chat_seen_${myId}`, JSON.stringify(seen));
         fetchUnreadMessages(myId);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [pathname, myId]);
 
   const loadNotifications = async () => {
@@ -348,25 +348,25 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {!isAdmin && (
           <button
-          onClick={() => {
-            setIsModalOpen(true);
-            setHasChecked(false);
-          }}
-          className="p-2 rounded-full hover:bg-gray-100 transition relative"
-          aria-label="Notificaciones"
-      >
-        <img
-          src="/notifications.svg"
-          alt="Notificaciones"
-          className="w-6 h-6"
-        />
+            onClick={() => {
+              setIsModalOpen(true);
+              setHasChecked(false);
+            }}
+            className="p-2 rounded-full hover:bg-gray-100 transition relative"
+            aria-label="Notificaciones"
+          >
+            <img
+              src="/notifications.svg"
+              alt="Notificaciones"
+              className="w-6 h-6"
+            />
 
-      {unreadCount > 0 && (
-        <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
-          {unreadCount > 9 ? "9+" : unreadCount}
-        </span>
-      )}
-      </button>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
         )}
 
         <Link href={isAdmin ? "/admin" : "/profile"}>

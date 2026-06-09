@@ -62,7 +62,7 @@ export default function MonitorCard({ monitor, onDeleted }: MonitorCardProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col items-center text-center transition-all duration-200 hover:shadow-md relative">
-      
+
       {isAdmin && (
         <button
           onClick={handleDelete}

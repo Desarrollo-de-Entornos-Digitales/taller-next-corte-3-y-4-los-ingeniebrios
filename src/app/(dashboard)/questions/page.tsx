@@ -18,7 +18,7 @@ export default async function QuestionsPage() {
       if (payload.permissions?.includes("manage_users")) {
         redirect("/feed");
       }
-    } catch {}
+    } catch { }
   }
 
   // Fetch categories and faculties in parallel

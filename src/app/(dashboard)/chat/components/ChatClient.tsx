@@ -75,7 +75,7 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
   const [tab, setTab] = useState<Tab>("chats");
   const [seen, setSeen] = useState<Record<number, number>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
-  const markedRef = useRef<number | null>(null); 
+  const markedRef = useRef<number | null>(null);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -179,9 +179,8 @@ export default function ChatClient({ me, receiver, initialMessages, allMessages,
         <div className="flex border-b border-gray-100">
           {tabs.map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 py-2.5 text-xs font-semibold capitalize transition ${
-                tab === t ? "text-[#5856D6] border-b-2 border-[#5856D6]" : "text-gray-400 hover:text-gray-600"
-              }`}
+              className={`flex-1 py-2.5 text-xs font-semibold capitalize transition ${tab === t ? "text-[#5856D6] border-b-2 border-[#5856D6]" : "text-gray-400 hover:text-gray-600"
+                }`}
             >
               {t}
             </button>

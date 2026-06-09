@@ -33,11 +33,10 @@ export default function AdminPanel() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-4 text-sm font-bold border-b-2 transition-colors ${
-                activeTab === tab.id
+              className={`py-4 text-sm font-bold border-b-2 transition-colors ${activeTab === tab.id
                   ? "border-[#5856D6] text-[#5856D6]"
                   : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
             >
               {tab.label}
             </button>

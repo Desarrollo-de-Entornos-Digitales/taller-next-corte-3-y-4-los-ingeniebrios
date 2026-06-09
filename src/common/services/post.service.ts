@@ -1,7 +1,7 @@
 // src/common/services/post.service.ts
 // Post Service - handles all post-related API operations
 
-import axiosClient, {ApiResult, safeRequest} from "../../lib/axios/client";
+import axiosClient, { ApiResult, safeRequest } from "../../lib/axios/client";
 
 // Type definition for post author (user information)
 export type PostUserResponse = {
@@ -29,7 +29,7 @@ export type PostResponse = {
   createdAt: string;
   user: PostUserResponse;
   category: PostCategoryResponse;
-  answers?: { id: number }[]; 
+  answers?: { id: number }[];
 };
 
 // Data Transfer Object for creating a new post

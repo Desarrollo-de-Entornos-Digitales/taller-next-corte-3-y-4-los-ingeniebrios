@@ -229,11 +229,10 @@ export default function SetupPage() {
                       key={sem}
                       type="button"
                       onClick={() => setSelectedSemester(sem)}
-                      className={`py-2.5 rounded-xl text-sm font-bold transition-all ${
-                        selectedSemester === sem
+                      className={`py-2.5 rounded-xl text-sm font-bold transition-all ${selectedSemester === sem
                           ? "bg-[#5454E9] text-white shadow-md scale-105"
                           : "bg-[#F5F5F7] text-gray-600 hover:bg-[#EBEBFF] hover:text-[#5454E9]"
-                      }`}
+                        }`}
                     >
                       {sem}
                     </button>

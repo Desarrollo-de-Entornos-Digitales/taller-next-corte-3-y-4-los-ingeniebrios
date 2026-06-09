@@ -70,7 +70,7 @@ export default function UserProfilePage() {
             ? `${user.student.semester}° Semestre`
             : "Semestre no asignado",
         }}
-        
+
         posts={posts}
       />
     </div>

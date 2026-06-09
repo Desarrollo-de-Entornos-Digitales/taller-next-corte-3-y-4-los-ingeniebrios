@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "ax
 
 // Create axios instance with API base URL from environment variables
 const axiosClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL, 
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
     headers: {
         "Content-Type": "application/json"
     }
@@ -28,7 +28,7 @@ const onRequest = async (config: InternalAxiosRequestConfig) => {
         // If running in browser (Client Components), retrieve token from localStorage
         token = localStorage.getItem("token") ?? undefined;
     }
-    
+
     setAuthorizationHeader(config, token);
     return config;
 };

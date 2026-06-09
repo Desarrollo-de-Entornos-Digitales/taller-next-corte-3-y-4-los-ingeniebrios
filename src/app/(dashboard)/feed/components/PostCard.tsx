@@ -62,7 +62,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted, onUpdated }) => {
         isAdmin = Array.isArray(payload.permissions) && payload.permissions.includes("manage_users");
         isOwner = Number(payload.sub) === post.user.id;
       }
-    } catch {}
+    } catch { }
   }
 
   const handleDelete = async () => {
@@ -362,11 +362,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted, onUpdated }) => {
                 <button
                   key={reason}
                   onClick={() => setSelectedReason(reason)}
-                  className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                    selectedReason === reason
+                  className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${selectedReason === reason
                       ? "bg-[#EBEBFF] text-[#5856D6] border-2 border-[#5856D6]"
                       : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent"
-                  }`}
+                    }`}
                 >{reason}</button>
               ))}
             </div>

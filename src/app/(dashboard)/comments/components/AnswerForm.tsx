@@ -39,9 +39,9 @@ export default function AnswerForm({ postId, onAnswerSent }: Props) {
     setLoading(true);
     setError(null);
 
-    const result = await createAnswerAction({ 
-      content, 
-      postId, 
+    const result = await createAnswerAction({
+      content,
+      postId,
       image: imageBase64 ?? null,
     });
 
@@ -89,7 +89,7 @@ export default function AnswerForm({ postId, onAnswerSent }: Props) {
       {error && <p className="text-red-500 text-xs">{error}</p>}
 
       <div className="flex items-center justify-between">
-        
+
         <button
           type="button"
           onClick={() => fileRef.current?.click()}

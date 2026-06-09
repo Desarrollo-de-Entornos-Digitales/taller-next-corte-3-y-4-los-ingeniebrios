@@ -30,8 +30,8 @@ interface FeedFiltersProps {
 // Feed Filters component - sidebar with category filters
 export default function FeedFilters({ categories, selectedCategory, setSelectedCategory }: FeedFiltersProps) {
   // Use backend categories if valid, otherwise use fallback list
-  const validCategories = categories && categories.some(c => categoryIcons[c.name]) 
-    ? categories 
+  const validCategories = categories && categories.some(c => categoryIcons[c.name])
+    ? categories
     : OFFICIAL_CATEGORIES;
 
   return (
@@ -71,9 +71,8 @@ export default function FeedFilters({ categories, selectedCategory, setSelectedC
               <img
                 src={iconSrc}
                 alt={category.name}
-                className={`w-5 h-5 object-contain transition duration-200 ${
-                  isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
-                }`}
+                className={`w-5 h-5 object-contain transition duration-200 ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+                  }`}
               />
               <span className="leading-tight text-gray-700 group-hover:text-[#5856D6] transition-colors">
                 {category.name}
@@ -85,10 +84,10 @@ export default function FeedFilters({ categories, selectedCategory, setSelectedC
 
       {/* Ilustración de la mascota con signos de pregunta de tu diseño anterior */}
       <div className="mt-4 flex justify-center w-full pt-2 border-t border-gray-50">
-        <img 
-          src="/zarigueya.png" 
-          alt="Mascota con dudas" 
-          className="w-full max-w-[150px] object-contain opacity-95" 
+        <img
+          src="/zarigueya.png"
+          alt="Mascota con dudas"
+          className="w-full max-w-[150px] object-contain opacity-95"
         />
       </div>
     </div>

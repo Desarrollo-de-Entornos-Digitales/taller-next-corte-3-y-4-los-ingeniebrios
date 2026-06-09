@@ -28,7 +28,7 @@ api.interceptors.request.use((config) => {
   }
 
   const payload = JSON.parse(atob(token!.split(".")[1]));
-console.log(payload);
+  console.log(payload);
 
   return config;
 });

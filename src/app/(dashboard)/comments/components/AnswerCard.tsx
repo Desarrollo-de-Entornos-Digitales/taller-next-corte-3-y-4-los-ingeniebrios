@@ -195,11 +195,10 @@ export default function AnswerCard({ answer }: Props) {
           <button
             onClick={() => !reported && setShowReportModal(true)}
             disabled={reported}
-            className={`flex items-center gap-1.5 text-sm font-semibold transition-opacity ${
-              reported
+            className={`flex items-center gap-1.5 text-sm font-semibold transition-opacity ${reported
                 ? "text-gray-400 cursor-not-allowed"
                 : "text-red-400 hover:opacity-70"
-            }`}
+              }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -214,11 +213,10 @@ export default function AnswerCard({ answer }: Props) {
           <button
             onClick={handleThanks}
             disabled={thanked || sending}
-            className={`flex items-center gap-1.5 text-sm font-semibold transition-opacity ${
-              thanked
+            className={`flex items-center gap-1.5 text-sm font-semibold transition-opacity ${thanked
                 ? "text-green-500 cursor-not-allowed"
                 : "text-[#5856D6] hover:opacity-70"
-            }`}
+              }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -257,11 +255,10 @@ export default function AnswerCard({ answer }: Props) {
                 <button
                   key={reason}
                   onClick={() => setSelectedReason(reason)}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    selectedReason === reason
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors ${selectedReason === reason
                       ? "bg-[#5856D6] text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                    }`}
                 >
                   {reason}
                 </button>

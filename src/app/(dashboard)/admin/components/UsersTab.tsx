@@ -92,13 +92,12 @@ export default function UsersTab() {
 
                 <p className="text-xs text-gray-400">@{user.username} · {user.institutional_email}</p>
 
-                <span className={`text-xs font-bold mt-1 w-fit px-2 py-0.5 rounded-full ${
-                  user.role?.name === "admin"
+                <span className={`text-xs font-bold mt-1 w-fit px-2 py-0.5 rounded-full ${user.role?.name === "admin"
                     ? "bg-purple-100 text-purple-600"
                     : user.role?.name === "moderator"
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-gray-100 text-gray-500"
-                }`}>
+                      ? "bg-blue-100 text-blue-600"
+                      : "bg-gray-100 text-gray-500"
+                  }`}>
                   {user.role?.name ?? "student"}
                 </span>
               </div>
@@ -106,11 +105,10 @@ export default function UsersTab() {
               {user.role?.name !== "admin" && (
                 <button
                   onClick={() => banUser(user.id, user.name, user.isActive ?? true)}
-                  className={`text-xs font-bold px-4 py-2 rounded-xl transition ${
-                    user.isActive ?? true
+                  className={`text-xs font-bold px-4 py-2 rounded-xl transition ${user.isActive ?? true
                       ? "bg-red-50 text-red-500 hover:bg-red-100"
                       : "bg-green-50 text-green-600 hover:bg-green-100"
-                  }`}
+                    }`}
                 >
                   {user.isActive ?? true ? "Banear" : "Desbanear"}
                 </button>

@@ -117,7 +117,7 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
       setDescription("");
       setCategoryId("");
       setFacultyId("");
-      
+
       // Redirección al feed de la comunidad
       setTimeout(() => {
         setSuccess(false);
@@ -133,7 +133,7 @@ export default function QuestionForm({ categories, faculties }: QuestionFormProp
       <div className="flex gap-6">
         {/* 📐 Columna Izquierda: Selectores e Ilustración de Archivo */}
         <div className="flex flex-col gap-4 w-64 shrink-0">
-          
+
           {/* Dropdown de Categorías de Preguntas */}
           <div className="relative">
             <select

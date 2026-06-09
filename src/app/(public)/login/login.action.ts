@@ -45,8 +45,8 @@ export default async function loginAction(email: string, password: string) {
     // Extract token from response
     if (result.data) {
         token = (result.data as any).access_token ||
-                (result.data as any).token ||
-                (result.data as any).data?.access_token;
+            (result.data as any).token ||
+            (result.data as any).data?.access_token;
     }
 
     if (!token) {
