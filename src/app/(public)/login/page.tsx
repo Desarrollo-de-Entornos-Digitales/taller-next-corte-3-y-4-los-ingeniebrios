@@ -18,7 +18,7 @@ export default function Login() {
     setErrorMessage(null);
 
     if (!formRef.current) return;
-    
+
     const formData = new FormData(formRef.current);
     const email = String(formData.get("email") || "");
     const password = String(formData.get("password") || "");
@@ -35,28 +35,29 @@ export default function Login() {
       setErrorMessage(result.message || "Credenciales incorrectas o error en el servidor");
       setIsLoading(false);
     } else {
-      if (result.userId) {
-        localStorage.setItem("userId", result.userId.toString());
-      }
-      if (result.studentId) {
-        localStorage.setItem("studentId", result.studentId.toString());
-      }
-      if (result.data?.access_token) {
-        localStorage.setItem("token", result.data.access_token);
-      }
-      
-      
-      // =========================================================
-      // IMPLEMENTACIÓN NUEVA: VERIFICACIÓN DEL CONFIG SETUP
-      // =========================================================
-      const saved = localStorage.getItem("userSetup");
-      
-      if (saved && JSON.parse(saved).hasSetup) {
-        window.location.href = "/feed";
+      // Limpiar setup anterior para que cada usuario pase por su propio flujo
+      localStorage.removeItem("userSetup");
+
+      if (result.userId) localStorage.setItem("userId", result.userId.toString());
+      if (result.studentId) localStorage.setItem("studentId", result.studentId.toString());
+      if (result.data?.access_token) localStorage.setItem("token", result.data.access_token);
+
+      const token = result.data?.access_token;
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const permissions: string[] = payload.permissions ?? [];
+
+        if (permissions.includes("manage_users")) {
+          // Admin → setup no necesario, directo al feed
+          localStorage.setItem("userSetup", JSON.stringify({ hasSetup: true }));
+          window.location.href = "/feed";
+        } else {
+          // Estudiante → va al setup para configurar carrera y semestre
+          window.location.href = "/setup";
+        }
       } else {
         window.location.href = "/setup";
       }
-      // =========================================================
     }
   };
 
@@ -75,7 +76,6 @@ export default function Login() {
           Welcome back to <br />
           Icesi Connect
         </h1>
-
         <p className="text-4xl mt-8 font-semibold">
           ¡The best <br /> Community!
         </p>
@@ -94,18 +94,8 @@ export default function Login() {
           )}
 
           <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <InputField 
-              name="email" 
-              placeholder="Email @u.icesi.edu.co" 
-              type="email" 
-              required 
-            />
-            <InputField 
-              name="password" 
-              placeholder="Password" 
-              type="password" 
-              required 
-            />
+            <InputField name="email" placeholder="Email @u.icesi.edu.co" type="email" required />
+            <InputField name="password" placeholder="Password" type="password" required />
 
             <button
               type="submit"
