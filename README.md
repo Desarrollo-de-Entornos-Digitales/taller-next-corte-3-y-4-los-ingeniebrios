@@ -57,7 +57,7 @@ npm run start
 
 The application was previously designed in Figma with a consistent visual identity across all screens. A consistent color palette was defined using the Icesi University brand colors, which is applied throughout the interface, from action buttons to backgrounds and interactive elements. The visual guidelines ensure uniformity in spacing, typography, and reusable components.
 
-📌 **Figma Mockups:**
+📌 **Figma Mockups:** [https://www.figma.com/design/yRYvICuvOsVzCOAHwCNzTX/IcesiConnect?node-id=0-1&t=dZDkJyba3W1jke9y-1]
 
 ### 2. User Interface (30%)
 
