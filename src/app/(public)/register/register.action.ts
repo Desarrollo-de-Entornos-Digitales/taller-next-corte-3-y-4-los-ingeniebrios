@@ -1,8 +1,11 @@
-// register.action.ts
+// register.action.ts - Server Action
+// Handles user registration and token storage
 "use server";
 import { cookies } from "next/headers";
 import { registerService } from "./service/register.service";
 
+// Server Action for user registration
+// Takes user data and creates new account
 export default async function registerAction(userData: {
   name: string;
   username: string;
