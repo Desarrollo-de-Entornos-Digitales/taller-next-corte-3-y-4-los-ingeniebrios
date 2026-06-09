@@ -335,6 +335,7 @@ export default function Navbar() {
             </>
           )}
         </div>
+      </div>
 
       <div className="flex gap-16 font-semibold">
         {links.map(({ label, href }) => {
