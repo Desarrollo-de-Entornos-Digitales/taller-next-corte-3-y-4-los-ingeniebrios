@@ -1,6 +1,8 @@
 // src/app/(public)/register/service/register.service.ts
-import axiosClient from "../../../../lib/axios/client"; 
+// Register Service - handles user registration API calls
+import axiosClient from "../../../../lib/axios/client";
 
+// Type definition for registration API response
 export interface RegisterResponse {
     access_token: string;
     user: {
@@ -10,16 +12,18 @@ export interface RegisterResponse {
     };
 }
 
+// Register Service class
 class RegisterService {
+    // Create new user account with provided data
     async register(userData: any): Promise<RegisterResponse> {
         try {
             const response = await axiosClient.post<RegisterResponse>("/auth/register", {
                 name: userData.name,
                 username: userData.username,
-                institutional_email: userData.email, 
-                password: userData.password,    
+                institutional_email: userData.email,
+                password: userData.password,
                 avatar: userData.avatar,
-                roleName: "student" 
+                roleName: "student"
             });
             return response.data;
         } catch (error) {

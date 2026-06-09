@@ -30,7 +30,6 @@ export default function Register() {
   }): FormErrors => {
     const errors: FormErrors = {};
 
-    // Nombre completo
     if (!payload.name.trim()) {
       errors.name = "El nombre es requerido";
     } else if (payload.name.trim().length < 3) {
@@ -39,7 +38,6 @@ export default function Register() {
       errors.name = "El nombre solo puede contener letras y espacios";
     }
 
-    // Username
     if (!payload.username.trim()) {
       errors.username = "El username es requerido";
     } else if (payload.username.length < 3) {
@@ -48,15 +46,12 @@ export default function Register() {
       errors.username = "Solo letras, números y guión bajo (_)";
     }
 
-    // Email institucional
     if (!payload.email.trim()) {
       errors.email = "El correo es requerido";
-    
-} else if (!/^[a-zA-Z0-9._%+-]+@u\.icesi\.edu\.co$/.test(payload.email)) {
-  errors.email = "Debes usar tu correo institucional @u.icesi.edu.co";
-}
+    } else if (!/^[a-zA-Z0-9._%+-]+@u\.icesi\.edu\.co$/.test(payload.email)) {
+      errors.email = "Debes usar tu correo institucional @u.icesi.edu.co";
+    }
 
-    // Contraseña
     if (!payload.password) {
       errors.password = "La contraseña es requerida";
     } else if (payload.password.length < 8) {
@@ -67,7 +62,6 @@ export default function Register() {
       errors.password = "Debe contener al menos un número";
     }
 
-    // Confirmar contraseña
     if (!payload.confirmPassword) {
       errors.confirmPassword = "Confirma tu contraseña";
     } else if (payload.password !== payload.confirmPassword) {
@@ -106,7 +100,8 @@ export default function Register() {
       if (result.success) {
         localStorage.setItem("token", result.access_token!);
         localStorage.setItem("userEmail", payload.email);
-        router.push("/feed");
+        
+        router.push("/setup");
       } else {
         setError(result.error || "Ocurrió un error inesperado");
       }
@@ -150,54 +145,29 @@ export default function Register() {
           )}
 
           <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
-            {/* Nombre */}
             <div className="flex flex-col gap-1">
               <InputField name="name" placeholder="Full Name" type="text" />
-              {fieldErrors.name && (
-                <p className="text-red-500 text-xs pl-1">{fieldErrors.name}</p>
-              )}
+              {fieldErrors.name && <p className="text-red-500 text-xs pl-1">{fieldErrors.name}</p>}
             </div>
 
-            {/* Username */}
             <div className="flex flex-col gap-1">
               <InputField name="username" placeholder="Username" type="text" />
-              {fieldErrors.username && (
-                <p className="text-red-500 text-xs pl-1">{fieldErrors.username}</p>
-              )}
+              {fieldErrors.username && <p className="text-red-500 text-xs pl-1">{fieldErrors.username}</p>}
             </div>
 
-            {/* Email */}
             <div className="flex flex-col gap-1">
-              <InputField
-                name="email"
-                placeholder="Email @u.icesi.edu.co"
-                type="email"
-              />
-              {fieldErrors.email && (
-                <p className="text-red-500 text-xs pl-1">{fieldErrors.email}</p>
-              )}
+              <InputField name="email" placeholder="Email @u.icesi.edu.co" type="email" />
+              {fieldErrors.email && <p className="text-red-500 text-xs pl-1">{fieldErrors.email}</p>}
             </div>
 
-            {/* Password */}
             <div className="flex flex-col gap-1">
               <InputField name="password" placeholder="Password" type="password" />
-              {fieldErrors.password && (
-                <p className="text-red-500 text-xs pl-1">{fieldErrors.password}</p>
-              )}
+              {fieldErrors.password && <p className="text-red-500 text-xs pl-1">{fieldErrors.password}</p>}
             </div>
 
-            {/* Confirm Password */}
             <div className="flex flex-col gap-1">
-              <InputField
-                name="confirmPassword"
-                placeholder="Confirm password"
-                type="password"
-              />
-              {fieldErrors.confirmPassword && (
-                <p className="text-red-500 text-xs pl-1">
-                  {fieldErrors.confirmPassword}
-                </p>
-              )}
+              <InputField name="confirmPassword" placeholder="Confirm password" type="password" />
+              {fieldErrors.confirmPassword && <p className="text-red-500 text-xs pl-1">{fieldErrors.confirmPassword}</p>}
             </div>
 
             <button

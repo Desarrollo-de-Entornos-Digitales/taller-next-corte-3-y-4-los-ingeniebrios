@@ -2,7 +2,8 @@
 
 import LogoButton from "../common/components/LogoButton";
 
-
+// Home page component - serves as the entry point with logo button navigation
+// Displays background image and logo button to navigate to login
 export default function Home() {
   return (
     <main
