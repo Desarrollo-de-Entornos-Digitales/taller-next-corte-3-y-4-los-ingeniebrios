@@ -326,7 +326,7 @@ export default function Navbar() {
         </div>
 
         <Link href="/feed">
-          <Image src="/IcesiConnect.png" alt="Icesi Connect" width={160} height={40} className="object-contain" />
+        
         </Link>
       </div>
 
