@@ -320,14 +320,21 @@ export default function Navbar() {
                     )}
                   </Link>
                 )}
+                <button
+                  onClick={async () => {
+                    setIsMenuOpen(false);
+                    await fetch("/api/logout", { method: "POST" });
+                    window.location.href = "/login";
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors font-medium"
+                >
+                  <img src="/LogOut.svg" alt="Logout" className="w-5 h-5" />
+                    Cerrar sesión
+                </button>
               </div>
             </>
           )}
         </div>
-
-        <Link href="/feed">
-        
-        </Link>
       </div>
 
       <div className="flex gap-16 font-semibold">
