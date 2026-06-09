@@ -45,6 +45,10 @@ export default function FeedContent({ posts: initialPosts, categories }: FeedCon
     setPosts(prev => prev.filter(p => p.id !== id));
   };
 
+  const handleUpdated = (updatedPost: PostResponse) => {
+    setPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
+  };
+
   return (
     <>
       <FeedFilters
@@ -80,7 +84,12 @@ export default function FeedContent({ posts: initialPosts, categories }: FeedCon
             </div>
           ) : (
             filteredPosts.map((post) => (
-              <PostCard key={post.id} post={post} onDeleted={handleDeleted} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onDeleted={handleDeleted}
+                onUpdated={handleUpdated}
+              />
             ))
           )}
         </div>

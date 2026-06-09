@@ -7,6 +7,7 @@ import { PostResponse } from '../../../../common/services/post.service';
 interface PostCardProps {
   post: PostResponse;
   onDeleted?: (id: number) => void;
+  onUpdated?: (updatedPost: PostResponse) => void;
 }
 
 const getAvatar = (avatar: string | null, name: string) => {
@@ -18,17 +19,6 @@ const getToken = () =>
   document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1]
   ?? localStorage.getItem("token");
 
-const checkIsAdmin = (): boolean => {
-  try {
-    const token = getToken();
-    if (!token) return false;
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return Array.isArray(payload.permissions) && payload.permissions.includes("manage_users");
-  } catch {
-    return false;
-  }
-};
-
 const REPORT_REASONS = [
   "Contenido inapropiado",
   "Spam o publicidad",
@@ -37,15 +27,23 @@ const REPORT_REASONS = [
   "Otro",
 ];
 
-const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onDeleted, onUpdated }) => {
   const [deleting, setDeleting] = useState(false);
   const [reported, setReported] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [reporting, setReporting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportError, setReportError] = useState("");
+
+  // Edit state
+  const [editTitle, setEditTitle] = useState(post.title);
+  const [editDescription, setEditDescription] = useState(post.description);
+  const [editImage, setEditImage] = useState<File | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
 
   let isAdmin = false;
   let isOwner = false;
@@ -85,29 +83,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
       setReportError("Por favor selecciona o escribe una razón.");
       return;
     }
-
     setReporting(true);
     setReportError("");
-
     try {
       const token = getToken();
       const payload = JSON.parse(atob(token!.split(".")[1]));
       const reporterId = payload.sub || payload.id;
-
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          reason,
-          reporterId,
-          reportedId: post.user.id,
-          status: "pending",
-        }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason, reporterId, reportedId: post.user.id, status: "pending" }),
       });
-
       if (res.ok) {
         setReported(true);
         setShowReportModal(false);
@@ -123,17 +109,63 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
     }
   };
 
-  const [timeAgo, setTimeAgo] = useState("");
+  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "IcesiConnect");
+    const response = await fetch("https://api.cloudinary.com/v1_1/duvapylkz/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    return data.secure_url;
+  };
 
+  const handleEdit = async () => {
+    if (!editTitle.trim() || !editDescription.trim()) {
+      setEditError("El título y la descripción son obligatorios.");
+      return;
+    }
+    setEditSaving(true);
+    setEditError("");
+    try {
+      const token = getToken();
+      let imageUrl = post.image;
+
+      if (editImage) {
+        imageUrl = await uploadImageToCloudinary(editImage);
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/own/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          description: editDescription.trim(),
+          image: imageUrl,
+        }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        onUpdated?.({ ...post, title: editTitle, description: editDescription, image: imageUrl });
+        setShowEditModal(false);
+        setEditImage(null);
+      } else {
+        setEditError("No se pudo actualizar el post. Intenta de nuevo.");
+      }
+    } catch {
+      setEditError("Error de conexión.");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const [timeAgo, setTimeAgo] = useState("");
   useEffect(() => {
-    setTimeAgo(
-      new Date(post.createdAt).toLocaleString('es-CO', {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    );
+    setTimeAgo(new Date(post.createdAt).toLocaleString('es-CO', {
+      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+    }));
   }, [post.createdAt]);
 
   return (
@@ -160,19 +192,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
               onClick={handleDelete}
               disabled={deleting}
               className="ml-auto flex items-center gap-1 bg-red-50 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-50"
-              >
-              {deleting ? (
-                "Eliminando..."
-                ) : (
-                <>
-                <img
-                  src="/delete1.svg"
-                  alt="Eliminar"
-                  className="w-4 h-4"
-                />
-                  Eliminar
-                </>
-                )}
+            >
+              {deleting ? "Eliminando..." : (<><img src="/delete1.svg" alt="Eliminar" className="w-4 h-4" /> Eliminar</>)}
             </button>
           )}
 
@@ -181,93 +202,53 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="text-gray-400 hover:text-gray-600 text-xl px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-              ⋯
-            </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-xl shadow-lg z-10 min-w-[130px] overflow-hidden">
-                {isOwner ? (
-                <>
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <img
-                  src="/edit.svg"
-                  alt="Editar"
-                  className="w-4 h-4"
-                  />
-                  Editar
-                </button>
-                <button
-                  onClick={async () => {
-                    if (!confirm("¿Eliminar tu post?")) return;
-                    setMenuOpen(false);
-                    setDeleting(true);
-
-                    try {
-                      const token = getToken();
-
-                     const res = await fetch(
-                      `${process.env.NEXT_PUBLIC_API_URL}/posts/own/${post.id}`,
-                        {
-                          method: "DELETE",
-                          headers: {
-                            Authorization: `Bearer ${token}`,
-                          },
-                        }
-                      );
-
-                      if (res.ok) onDeleted?.(post.id);
-                      else alert("No se pudo eliminar el post.");
-                    } catch {
-                      alert("Error al eliminar.");
-                    } finally {
-                      setDeleting(false);
-                    }
-                  }}
-                  disabled={deleting}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-                >
-                  {deleting ? (
-                    "Eliminando..."
-                  ) : (
-                  <>
-                  <img
-                    src="/delete1.svg"
-                    alt="Eliminar"
-                    className="w-4 h-4"
-                  />
-                    Eliminar
-                  </>
-                  )}
-                  </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      !reported && setShowReportModal(true);
-                    }}
-                    disabled={reported}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-yellow-600 hover:bg-yellow-50 transition-colors disabled:opacity-50"
-                  >
-                    {reported ? (
-                      "✓ Reportado"
-                    ) : (
+              >⋯</button>
+              {menuOpen && (
+                <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-xl shadow-lg z-10 min-w-[130px] overflow-hidden">
+                  {isOwner ? (
                     <>
-                    <img
-                      src="/REPORT.svg"
-                      alt="Reportar"
-                      className="w-4 h-4"
-                    />
-                      Reportar
+                      <button
+                        onClick={() => { setMenuOpen(false); setEditTitle(post.title); setEditDescription(post.description); setShowEditModal(true); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <img src="/edit.svg" alt="Editar" className="w-4 h-4" /> Editar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm("¿Eliminar tu post?")) return;
+                          setMenuOpen(false);
+                          setDeleting(true);
+                          try {
+                            const token = getToken();
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/own/${post.id}`, {
+                              method: "DELETE",
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
+                            if (res.ok) onDeleted?.(post.id);
+                            else alert("No se pudo eliminar el post.");
+                          } catch {
+                            alert("Error al eliminar.");
+                          } finally {
+                            setDeleting(false);
+                          }
+                        }}
+                        disabled={deleting}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                      >
+                        {deleting ? "Eliminando..." : (<><img src="/delete1.svg" alt="Eliminar" className="w-4 h-4" /> Eliminar</>)}
+                      </button>
                     </>
-                    )}
-                  </button>
-                )}
-              </div>
-            )}
+                  ) : (
+                    <button
+                      onClick={() => { setMenuOpen(false); !reported && setShowReportModal(true); }}
+                      disabled={reported}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-yellow-600 hover:bg-yellow-50 transition-colors disabled:opacity-50"
+                    >
+                      {reported ? "✓ Reportado" : (<><img src="/REPORT.svg" alt="Reportar" className="w-4 h-4" /> Reportar</>)}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -287,53 +268,102 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
           <span className="px-3 py-1 bg-[#EBEBFF] text-[#5856D6] rounded-full text-[10px] font-bold">
             {post.category.name}
           </span>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/comments/${post.id}`}
-              className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
-            >
-              <span className="text-xs font-bold text-gray-600">{post.answers?.length ?? 0}</span>
-              <img src="/comment.svg" alt="comments" className="w-4 h-4 opacity-50" />
-            </Link>
-          </div>
+          <Link
+            href={`/comments/${post.id}`}
+            className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors"
+          >
+            <span className="text-xs font-bold text-gray-600">{post.answers?.length ?? 0}</span>
+            <img src="/comment.svg" alt="comments" className="w-4 h-4 opacity-50" />
+          </Link>
         </div>
       </div>
+
+      {/* Modal de Edición */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-[500px] shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-gray-800 text-lg">Editar publicación</h3>
+              <button
+                onClick={() => { setShowEditModal(false); setEditError(""); setEditImage(null); }}
+                className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+              >✕</button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-bold text-gray-700">Título</label>
+              <input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#5856D6]/30"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-bold text-gray-700">Descripción</label>
+              <textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={4}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-[#5856D6]/30"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-bold text-gray-700">Imagen (opcional)</label>
+              {post.image && !editImage && (
+                <img src={post.image} alt="actual" className="w-full max-h-32 object-cover rounded-xl border border-gray-100 mb-1" />
+              )}
+              <label className="flex items-center gap-2 border border-dashed border-[#5856D6] rounded-xl px-4 py-2.5 cursor-pointer hover:bg-[#EBEBFF] transition-colors text-sm text-[#5856D6] font-medium">
+                📄 {editImage ? editImage.name : "Cambiar imagen"}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => setEditImage(e.target.files?.[0] ?? null)} />
+              </label>
+            </div>
+
+            {editError && <p className="text-red-500 text-xs font-semibold">{editError}</p>}
+
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => { setShowEditModal(false); setEditError(""); setEditImage(null); }}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition"
+              >Cancelar</button>
+              <button
+                onClick={handleEdit}
+                disabled={editSaving}
+                className="flex-1 py-2.5 rounded-xl bg-[#5856D6] text-white text-sm font-bold hover:bg-[#4644c4] transition disabled:opacity-50"
+              >{editSaving ? "Guardando..." : "Guardar cambios"}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Reporte */}
       {showReportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-[420px] shadow-2xl flex flex-col gap-4">
-
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-gray-800 text-lg">Reportar publicación</h3>
               <button
                 onClick={() => { setShowReportModal(false); setSelectedReason(""); setCustomReason(""); setReportError(""); }}
                 className="text-gray-400 hover:text-gray-600 text-xl font-bold"
-              >
-                ✕
-              </button>
+              >✕</button>
             </div>
-
             <p className="text-sm text-gray-500">
               ¿Por qué quieres reportar la publicación de <span className="font-semibold text-gray-700">{post.user.name}</span>?
             </p>
-
             <div className="flex flex-col gap-2">
               {REPORT_REASONS.map((reason) => (
                 <button
                   key={reason}
                   onClick={() => setSelectedReason(reason)}
-                  className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${selectedReason === reason
+                  className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    selectedReason === reason
                       ? "bg-[#EBEBFF] text-[#5856D6] border-2 border-[#5856D6]"
                       : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent"
-                    }`}
-                >
-                  {reason}
-                </button>
+                  }`}
+                >{reason}</button>
               ))}
             </div>
-
             {selectedReason === "Otro" && (
               <textarea
                 value={customReason}
@@ -343,23 +373,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDeleted }) => {
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-[#5856D6]/30"
               />
             )}
-
             {reportError && <p className="text-red-500 text-xs font-semibold">{reportError}</p>}
-
             <div className="flex gap-3 mt-2">
               <button
                 onClick={() => { setShowReportModal(false); setSelectedReason(""); setCustomReason(""); setReportError(""); }}
                 className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition"
-              >
-                Cancelar
-              </button>
+              >Cancelar</button>
               <button
                 onClick={handleReport}
                 disabled={reporting || !selectedReason}
                 className="flex-1 py-2.5 rounded-xl bg-[#5856D6] text-white text-sm font-bold hover:bg-[#4644c4] transition disabled:opacity-50"
-              >
-                {reporting ? "Enviando..." : "Enviar reporte"}
-              </button>
+              >{reporting ? "Enviando..." : "Enviar reporte"}</button>
             </div>
           </div>
         </div>
